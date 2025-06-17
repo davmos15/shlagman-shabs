@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shlagman Shabs Plan</title>
     
-    <!-- NO Firebase script tags needed - we'll use imports -->
+    <!-- Firebase Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-firestore-compat.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -43,6 +46,32 @@
         .date {
             opacity: 0.9;
             font-size: 16px;
+        }
+        
+        .sync-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .sync-online {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .sync-offline {
+            background: #f56565;
+            color: white;
+        }
+        
+        .sync-saving {
+            background: #ed8936;
+            color: white;
         }
         
         .host-info {
@@ -317,6 +346,9 @@
     </style>
 </head>
 <body>
+    <!-- Sync Status Indicator -->
+    <div id="sync-status" class="sync-status sync-offline">⚫ Connecting...</div>
+
     <div class="container">
         <div class="header">
             <h1>🕯️ Shlagman Shabs Plan</h1>
@@ -405,6 +437,21 @@
     </div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcIHugMlcAy2VxBBcGc7jrcvNO0O2EfSw",
+            authDomain: "shlagman-shabs.firebaseapp.com",
+            projectId: "shlagman-shabs",
+            storageBucket: "shlagman-shabs.firebasestorage.app",
+            messagingSenderId: "718510100727",
+            appId: "1:718510100727:web:c4a7afdadfe2ae6e8843f2",
+            measurementId: "G-EV7GE2GVQK"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
         // Family members from the WhatsApp group (alphabetical order)
         const familyMembers = [
             'Adi', 'Bobba', 'Extras', 'Gabe', 'Gilla', 
@@ -426,92 +473,117 @@
         let currentHost = '';
         let currentDate = '';
         
-        // Save current state to URL with better compression
-        function saveStateToURL() {
-            const state = {
-                r: {}, // rsvp data
-                b: {}, // bring data  
-                h: currentHost, // host
-                d: currentDate, // date
-                i: bringItems // items
-            };
-            
-            // Only include non-default RSVP data (compress by only saving changed states)
-            familyMembers.forEach(member => {
-                const data = rsvpData[member];
-                if (data.status !== 'pending' || data.guests !== 1) {
-                    state.r[member] = [data.status === 'coming' ? 1 : data.status === 'not-coming' ? 0 : 2, data.guests];
-                }
-            });
-            
-            // Only include assigned bring items
-            bringItems.forEach(item => {
-                if (bringData[item] && bringData[item].assigned) {
-                    state.b[item] = bringData[item].person;
-                }
-            });
-            
-            // Only save if there's meaningful data
-            const hasData = Object.keys(state.r).length > 0 || Object.keys(state.b).length > 0 || state.h || state.d;
-            
-            if (hasData) {
-                // Compress and encode
-                const compressed = btoa(JSON.stringify(state)).replace(/[+/=]/g, m => ({'+': '-', '/': '_', '=': ''}[m]));
-                const newURL = window.location.pathname + '?s=' + compressed;
-                window.history.replaceState({}, '', newURL);
-            } else {
-                // No data, clean URL
-                window.history.replaceState({}, '', window.location.pathname);
-            }
-        }
-        
-        // Load state from URL with decompression
-        function loadStateFromURL() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const stateParam = urlParams.get('s');
-            
-            if (stateParam) {
-                try {
-                    // Decompress
-                    const restored = stateParam.replace(/[-_]/g, m => ({'-': '+', '_': '/'}[m])) + '==='.slice(0, (4 - stateParam.length % 4) % 4);
-                    const state = JSON.parse(atob(restored));
-                    
-                    // Restore RSVP data
-                    if (state.r) {
-                        Object.entries(state.r).forEach(([member, [status, guests]]) => {
-                            rsvpData[member] = {
-                                status: status === 1 ? 'coming' : status === 0 ? 'not-coming' : 'pending',
-                                guests: guests
-                            };
-                        });
-                    }
-                    
-                    // Restore bring data
-                    if (state.b) {
-                        Object.entries(state.b).forEach(([item, person]) => {
-                            bringData[item] = { assigned: true, person: person };
-                        });
-                    }
-                    
-                    // Restore host and date
-                    currentHost = state.h || '';
-                    currentDate = state.d || '';
-                    
-                    // Restore custom items
-                    if (state.i && Array.isArray(state.i)) {
-                        bringItems = state.i;
-                    }
-                    
-                } catch (e) {
-                    console.log('Could not parse state from URL');
-                }
-            }
-        }
-        
         // Initialize family member RSVPs
         familyMembers.forEach(member => {
             rsvpData[member] = { status: 'pending', guests: 1 };
         });
+        
+        // Firebase Functions
+        function updateSyncStatus(status) {
+            const statusEl = document.getElementById('sync-status');
+            
+            switch(status) {
+                case 'online':
+                    statusEl.textContent = '🟢 Live';
+                    statusEl.className = 'sync-status sync-online';
+                    break;
+                case 'saving':
+                    statusEl.textContent = '🟡 Saving...';
+                    statusEl.className = 'sync-status sync-saving';
+                    break;
+                case 'offline':
+                default:
+                    statusEl.textContent = '🔴 Offline';
+                    statusEl.className = 'sync-status sync-offline';
+                    break;
+            }
+        }
+        
+        async function saveStateToFirebase() {
+            updateSyncStatus('saving');
+            
+            try {
+                const state = {
+                    rsvpData,
+                    bringData,
+                    currentHost,
+                    currentDate,
+                    bringItems,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                await db.collection('shabbat-plans').doc('current').set(state);
+                updateSyncStatus('online');
+                console.log('✅ State saved to Firebase');
+            } catch (error) {
+                console.error('❌ Failed to save to Firebase:', error);
+                updateSyncStatus('offline');
+            }
+        }
+        
+        async function loadStateFromFirebase() {
+            try {
+                const doc = await db.collection('shabbat-plans').doc('current').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    
+                    // Load data from Firebase
+                    if (data.rsvpData) rsvpData = data.rsvpData;
+                    if (data.bringData) bringData = data.bringData;
+                    if (data.currentHost) currentHost = data.currentHost;
+                    if (data.currentDate) currentDate = data.currentDate;
+                    if (data.bringItems) bringItems = data.bringItems;
+                    
+                    // Ensure all family members have RSVP data
+                    familyMembers.forEach(member => {
+                        if (!rsvpData[member]) {
+                            rsvpData[member] = { status: 'pending', guests: 1 };
+                        }
+                    });
+                    
+                    initializeBringData();
+                    updateDisplay();
+                    updateSyncStatus('online');
+                    console.log('✅ State loaded from Firebase');
+                } else {
+                    // No existing data, create initial state
+                    await saveStateToFirebase();
+                }
+            } catch (error) {
+                console.error('❌ Failed to load from Firebase:', error);
+                updateSyncStatus('offline');
+            }
+        }
+        
+        function setupRealtimeSync() {
+            db.collection('shabbat-plans').doc('current').onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    
+                    // Update state with Firebase data
+                    if (data.rsvpData) rsvpData = data.rsvpData;
+                    if (data.bringData) bringData = data.bringData;
+                    if (data.currentHost) currentHost = data.currentHost;
+                    if (data.currentDate) currentDate = data.currentDate;
+                    if (data.bringItems) bringItems = data.bringItems;
+                    
+                    // Ensure all family members have RSVP data
+                    familyMembers.forEach(member => {
+                        if (!rsvpData[member]) {
+                            rsvpData[member] = { status: 'pending', guests: 1 };
+                        }
+                    });
+                    
+                    initializeBringData();
+                    updateDisplay();
+                    updateSyncStatus('online');
+                    console.log('🔄 Real-time update received');
+                }
+            }, (error) => {
+                console.error('❌ Real-time sync error:', error);
+                updateSyncStatus('offline');
+            });
+        }
         
         // Initialize bring items
         function initializeBringData() {
@@ -793,7 +865,6 @@
                 .filter(item => !bringData[item].assigned)
                 .join(', ');
             
-            // Use clean base URL (no parameters needed)
             const baseURL = `${window.location.origin}${window.location.pathname}`;
             
             let message = `🕯️ *Shlagman Shabs Plan*\n\n`;
@@ -813,16 +884,29 @@
             
             // Copy to clipboard
             navigator.clipboard.writeText(message).then(() => {
-                alert('📱 Planning link copied!\nEveryone sees live updates on the same URL!');
+                alert('📱 Planning summary copied!\nEveryone sees live updates on the same URL!');
             }).catch(() => {
                 alert('Summary ready:\n\n' + message);
             });
         }
         
         // Initialize the app
-        loadStateFromURL();  // Load any existing state from URL first
-        initializeBringData();
-        updateDisplay();
+        async function initializeApp() {
+            updateSyncStatus('offline');
+            
+            // Load state from Firebase
+            await loadStateFromFirebase();
+            
+            // Set up real-time sync
+            setupRealtimeSync();
+            
+            // Initialize and display
+            initializeBringData();
+            updateDisplay();
+        }
+        
+        // Start the app
+        initializeApp();
         
         // Close modals when clicking outside
         document.getElementById('selection-modal').onclick = function(e) {
