@@ -795,8 +795,8 @@
                 .filter(item => !bringData[item].assigned)
                 .join(', ');
             
-            // Clean room-based URL
-            const roomURL = `${window.location.origin}${window.location.pathname}?room=${ROOM_ID}`;
+            // Use clean base URL (no parameters needed)
+            const baseURL = `${window.location.origin}${window.location.pathname}`;
             
             let message = `🕯️ *Shlagman Shabs Plan*\n\n`;
             message += `📅 *${date}*\n`;
@@ -811,11 +811,11 @@
                 message += `❓ *Still needed:* ${neededItems}\n\n`;
             }
             
-            message += `🔗 RSVP & update: ${roomURL}`;
+            message += `🔗 RSVP & update: ${baseURL}`;
             
             // Copy to clipboard
             navigator.clipboard.writeText(message).then(() => {
-                alert('📱 Live planning link copied!\nEveryone who clicks will see real-time updates!');
+                alert('📱 Planning link copied!\nEveryone sees live updates on the same URL!');
             }).catch(() => {
                 alert('Summary ready:\n\n' + message);
             });
