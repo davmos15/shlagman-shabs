@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shlagman Shabs Plan</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -603,13 +607,13 @@
             else rsvpData[member].status = 'pending';
             
             updateDisplay();
-            saveStateToURL();
+            saveStateToFirebase();
         }
         
         function updateGuestCount(member, count) {
             rsvpData[member].guests = parseInt(count) || 1;
             updateGuestSummary();
-            saveStateToURL();
+            saveStateToFirebase();
         }
         
         function updateGuestSummary() {
@@ -661,7 +665,7 @@
                     bringData[item] = { assigned: true, person: person };
                     updateBringList();
                     closeModal();
-                    saveStateToURL();
+                    saveStateToFirebase();
                 };
                 personList.appendChild(btn);
             });
@@ -699,7 +703,7 @@
                 delete bringData[item];
                 updateEditList();
                 updateBringList();
-                saveStateToURL();
+                saveStateToFirebase();
             }
         }
         
@@ -712,7 +716,7 @@
                 input.value = '';
                 updateEditList();
                 updateBringList();
-                saveStateToURL();
+                saveStateToFirebase();
             }
         }
         
@@ -733,7 +737,7 @@
                     currentHost = person;
                     updateDisplay();
                     closeHostModal();
-                    saveStateToURL();
+                    saveStateToFirebase();
                 };
                 hostList.appendChild(btn);
             });
@@ -767,27 +771,13 @@
             if (dateInput.value) {
                 currentDate = dateInput.value;
                 updateDisplay();
-                saveStateToURL();
+                saveStateToFirebase();
             }
             closeDateModal();
         }
         
         function closeDateModal() {
             document.getElementById('date-modal').style.display = 'none';
-        }
-        
-        async function shortenURL(longURL) {
-            try {
-                // Using a free URL shortener API (is.gd)
-                const response = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(longURL)}`);
-                if (response.ok) {
-                    const shortURL = await response.text();
-                    return shortURL.trim();
-                }
-            } catch (error) {
-                console.log('URL shortening failed, using original URL');
-            }
-            return longURL;
         }
         
         async function shareSummary() {
@@ -805,9 +795,8 @@
                 .filter(item => !bringData[item].assigned)
                 .join(', ');
             
-            // Get a clean, short URL
-            const currentURL = window.location.href;
-            const shortURL = await shortenURL(currentURL);
+            // Clean room-based URL
+            const roomURL = `${window.location.origin}${window.location.pathname}?room=${ROOM_ID}`;
             
             let message = `🕯️ *Shlagman Shabs Plan*\n\n`;
             message += `📅 *${date}*\n`;
@@ -822,11 +811,11 @@
                 message += `❓ *Still needed:* ${neededItems}\n\n`;
             }
             
-            message += `🔗 RSVP & update: ${shortURL}`;
+            message += `🔗 RSVP & update: ${roomURL}`;
             
             // Copy to clipboard
             navigator.clipboard.writeText(message).then(() => {
-                alert('📱 Summary with clean link copied!\nPaste it into WhatsApp - nice short URL that anyone can click!');
+                alert('📱 Live planning link copied!\nEveryone who clicks will see real-time updates!');
             }).catch(() => {
                 alert('Summary ready:\n\n' + message);
             });
