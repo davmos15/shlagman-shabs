@@ -1,96 +1,829 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script defer src="/_vercel/insights/script.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css"
-    />
-    <title>Vercel HTML Starter</title>
-    <meta
-      name="description"
-      content="High-performance HTML based website template."
-    />
-  </head>
-  <body>
-    <h1>Vercel HTML Starter</h1>
-    <p>
-      This template is a simple, but powerful single
-      <code>index.html</code> file deployed to
-      <a href="https://vercel.com">Vercel</a>. When your site is deployed, all
-      static assets (like HTML, JavaScript, CSS, images, and more) are deployed
-      globally to every
-      <a href="https://vercel.com/docs/concepts/edge-network/overview"
-        >Vercel Edge Network</a
-      >
-      region.
-    </p>
-    <h2>Simple, privacy-friendly analytics</h2>
-    <p>
-      Want to understand your visitor traffic? Vercel Analytics gives you
-      first-party, privacy-friendly traffic analytics for your HTML site. This
-      template is already configured using the following script:
-    </p>
-    <pre><code>&lt;script defer src="/_vercel/insights/script.js"&gt;&lt;/script&gt;</code></pre>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/analytics">Vercel Analytics</a>.
-    </p>
-    <h2>Integrated with git</h2>
-    <p>
-      Deploying updates to your site is as simple as
-      <code>git push</code> thanks to Vercel's advanced
-      <a href="https://vercel.com/docs/concepts/git">Git Integration</a>.
-      Support for GitHub, GitLab, Bitbucket is zero-configuration, and with the
-      flexible Vercel CLI and API, you can integrate with any tool possible.
-    </p>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/docs/concepts/git">Git Integration</a>.
-    </p>
-    <h2>Fast <code>gzip</code> compression</h2>
-    <p>
-      To help ensure the smallest possible file sizes for your static assets,
-      the Vercel Edge Network compresses files by default using
-      <code>gzip</code>. You can also optionally use
-      <code>brotli</code> compressesion if you prefer.
-    </p>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/docs/concepts/edge-network/compression"
-        >compression</a
-      >.
-    </p>
-    <h2>Advanced routing configuration</h2>
-    <p>
-      Vercel gives you a variety of ways to configure the routing of your
-      website. For example, adding redirects, rewrites, or headers to your page.
-      While you can use <code>vercel.json</code> to define these through JSON,
-      you can also express your routing configuration as code using
-      <a href="https://vercel.com/docs/concepts/functions/edge-middleware"
-        >Vercel Edge Middleware</a
-      >.
-    </p>
-    <p>
-      Middleware runs before the
-      <a href="https://vercel.com/docs/concepts/edge-network/caching"
-        >Vercel Edge Network Cache</a
-      >, so you can configure routing exactly as your application needs. For
-      example, this template uses <code>middleware.js</code> defined in the root
-      of the repository to add additional security headers to the site:
-    </p>
-    <pre><code>referrer-policy: origin-when-cross-origin
-strict-transport-security: max-age=31536000; includeSubDomains; preload
-x-content-type-options: nosniff
-x-dns-prefetch-control: on
-x-frame-options: DENY</code></pre>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/docs/concepts/functions/edge-middleware"
-        >Vercel Edge Middleware</a
-      >.
-    </p>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shlagman Shabs Plan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .date {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .host-info {
+            background: #f7fafc;
+            padding: 20px;
+            border-left: 4px solid #4299e1;
+            margin: 20px;
+            border-radius: 8px;
+        }
+        
+        .host-info h2 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .host-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4299e1;
+        }
+        
+        .section {
+            margin: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            background: #edf2f7;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .edit-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .edit-btn:hover {
+            background: #3182ce;
+        }
+        
+        .section-header h3 {
+            color: #2d3748;
+            font-size: 16px;
+        }
+        
+        .rsvp-grid {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 10px;
+            padding: 15px 20px;
+            align-items: center;
+        }
+        
+        .family-member {
+            font-size: 16px;
+            color: #4a5568;
+        }
+        
+        .guest-count {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            width: 60px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .rsvp-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 80px;
+        }
+        
+        .rsvp-btn.coming {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .rsvp-btn.not-coming {
+            background: #f56565;
+            color: white;
+        }
+        
+        .rsvp-btn.pending {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .bring-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f7fafc;
+        }
+        
+        .bring-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-name {
+            font-size: 16px;
+            color: #2d3748;
+        }
+        
+        .item-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .item-covered {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .item-needed {
+            background: #fed7d7;
+            color: #742a2a;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .item-needed:hover {
+            background: #fc8181;
+            color: white;
+        }
+        
+        .summary-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: calc(100% - 40px);
+            transition: background 0.2s;
+        }
+        
+        .summary-btn:hover {
+            background: #3182ce;
+        }
+        
+        .total-guests {
+            background: #e6fffa;
+            margin: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #81e6d9;
+        }
+        
+        .total-guests strong {
+            color: #234e52;
+            font-size: 18px;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal h3 {
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+        
+        .person-btn {
+            display: block;
+            width: 100%;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .person-btn:hover {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .modal-btn.primary {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .modal-btn.secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .edit-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin: 5px 0;
+        }
+        
+        .remove-btn {
+            background: #f56565;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🕯️ Shlagman Shabs Plan</h1>
+            <div class="date" id="current-date"></div>
+            <button class="edit-btn" onclick="editDate()" style="margin-top: 10px;">📅 Edit Date</button>
+        </div>
+        
+        <div class="host-info">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>This Week's Host</h2>
+                <button class="edit-btn" onclick="editHost()">✏️ Edit Host</button>
+            </div>
+            <div class="host-name" id="current-host"></div>
+        </div>
+        
+        <div class="section">
+            <div class="section-header">
+                <h3>👥 Who's Coming?</h3>
+            </div>
+            <div id="rsvp-list"></div>
+        </div>
+        
+        <div class="total-guests" id="guest-summary"></div>
+        
+        <div class="section">
+            <div class="section-header">
+                <h3>🍽️ What to Bring</h3>
+                <button class="edit-btn" onclick="editItems()">✏️ Edit Items</button>
+            </div>
+            <div id="bring-list"></div>
+        </div>
+        
+        <button class="summary-btn" onclick="shareSummary()">
+            📱 Share Update to WhatsApp
+        </button>
+    </div>
+
+    <!-- Selection Modal -->
+    <div class="modal" id="selection-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Select Person</h3>
+            <div id="person-list"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Items Modal -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <h3>Edit What to Bring</h3>
+            <div id="edit-list"></div>
+            <input type="text" id="new-item-input" placeholder="Add new item..." 
+                   style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin: 10px 0;"
+                   onkeypress="if(event.key==='Enter') addNewItem()">
+            <div class="modal-buttons">
+                <button class="modal-btn primary" onclick="addNewItem()">Add Item</button>
+                <button class="modal-btn secondary" onclick="closeEditModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Host Modal -->
+    <div class="modal" id="host-modal">
+        <div class="modal-content">
+            <h3>Select Host</h3>
+            <div id="host-list"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeHostModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Date Modal -->
+    <div class="modal" id="date-modal">
+        <div class="modal-content">
+            <h3>Set Shabbat Date</h3>
+            <input type="date" id="date-input" 
+                   style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin: 10px 0;">
+            <div class="modal-buttons">
+                <button class="modal-btn primary" onclick="saveDate()">Save Date</button>
+                <button class="modal-btn secondary" onclick="closeDateModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Family members from the WhatsApp group (alphabetical order)
+        const familyMembers = [
+            'Adi', 'Bobba', 'Extras', 'Gabe', 'Gilla', 
+            'Meyerowitz', 'Mosbergs', 'Moskow 29b', 'Moskow Carlingford', 'PBs'
+        ];
+        
+        // Host rotation (every 2 weeks)
+        const hostRotation = ['Gilla', 'Ruth', 'Tamar'];
+        
+        // Items typically needed for Shabbat lunch
+        let bringItems = [
+            'Challah', 'Wine/Grape Juice', 'Salad', 'Side Dish', 
+            'Dessert', 'Drinks', 'Appetizer', 'Fruit'
+        ];
+        
+        // State management
+        let rsvpData = {};
+        let bringData = {};
+        let currentHost = '';
+        let currentDate = '';
+        
+        // Load state from URL on page load
+        function loadStateFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Load RSVP data
+            const rsvpParam = urlParams.get('rsvp');
+            if (rsvpParam) {
+                try {
+                    rsvpData = JSON.parse(decodeURIComponent(rsvpParam));
+                } catch (e) {
+                    console.log('Could not parse RSVP data from URL');
+                }
+            }
+            
+            // Load bring data
+            const bringParam = urlParams.get('bring');
+            if (bringParam) {
+                try {
+                    bringData = JSON.parse(decodeURIComponent(bringParam));
+                } catch (e) {
+                    console.log('Could not parse bring data from URL');
+                }
+            }
+            
+            // Load host and date
+            currentHost = urlParams.get('host') || '';
+            currentDate = urlParams.get('date') || '';
+            
+            // Load custom items
+            const itemsParam = urlParams.get('items');
+            if (itemsParam) {
+                try {
+                    bringItems = JSON.parse(decodeURIComponent(itemsParam));
+                } catch (e) {
+                    console.log('Could not parse items from URL');
+                }
+            }
+        }
+        
+        // Save current state to URL
+        function saveStateToURL() {
+            const params = new URLSearchParams();
+            
+            // Only save non-empty data to keep URL clean
+            if (Object.keys(rsvpData).length > 0) {
+                params.set('rsvp', encodeURIComponent(JSON.stringify(rsvpData)));
+            }
+            
+            if (Object.keys(bringData).length > 0) {
+                params.set('bring', encodeURIComponent(JSON.stringify(bringData)));
+            }
+            
+            if (currentHost) {
+                params.set('host', currentHost);
+            }
+            
+            if (currentDate) {
+                params.set('date', currentDate);
+            }
+            
+            // Save custom items if different from default
+            const defaultItems = ['Challah', 'Wine/Grape Juice', 'Salad', 'Side Dish', 'Dessert', 'Drinks', 'Appetizer', 'Fruit'];
+            if (JSON.stringify(bringItems) !== JSON.stringify(defaultItems)) {
+                params.set('items', encodeURIComponent(JSON.stringify(bringItems)));
+            }
+            
+            // Update URL without page reload
+            const newURL = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            window.history.replaceState({}, '', newURL);
+        }
+        
+        // Initialize family member RSVPs
+        familyMembers.forEach(member => {
+            rsvpData[member] = { status: 'pending', guests: 1 };
+        });
+        
+        // Initialize bring items
+        function initializeBringData() {
+            bringItems.forEach(item => {
+                if (!bringData[item]) {
+                    bringData[item] = { assigned: false, person: null };
+                }
+            });
+        }
+        
+        function getCurrentHost() {
+            // Use manually set host if available, otherwise use rotation
+            if (currentHost) return currentHost;
+            
+            // For this week, Ruth is hosting
+            // Simple rotation based on week number - adjusted to show Ruth this week
+            const weekNumber = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 14)) + 1;
+            return hostRotation[weekNumber % hostRotation.length];
+        }
+        
+        function getNextSaturday() {
+            // Use manually set date if available
+            if (currentDate) {
+                const date = new Date(currentDate);
+                return date.toLocaleDateString('en-AU', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            }
+            
+            // Otherwise calculate next Saturday
+            const today = new Date();
+            const daysUntilSaturday = (6 - today.getDay()) % 7;
+            const nextSaturday = new Date(today);
+            nextSaturday.setDate(today.getDate() + (daysUntilSaturday === 0 ? 7 : daysUntilSaturday));
+            
+            return nextSaturday.toLocaleDateString('en-AU', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+        
+        function updateDisplay() {
+            // Update date and host
+            document.getElementById('current-date').textContent = getNextSaturday();
+            document.getElementById('current-host').textContent = getCurrentHost();
+            
+            // Update RSVP list
+            updateRSVPList();
+            updateGuestSummary();
+            updateBringList();
+        }
+        
+        function updateRSVPList() {
+            const rsvpContainer = document.getElementById('rsvp-list');
+            rsvpContainer.innerHTML = '';
+            
+            familyMembers.forEach(member => {
+                const memberData = rsvpData[member];
+                const rsvpRow = document.createElement('div');
+                rsvpRow.className = 'rsvp-grid';
+                
+                rsvpRow.innerHTML = `
+                    <div class="family-member">${member}</div>
+                    <input type="number" 
+                           class="guest-count" 
+                           value="${memberData.guests}" 
+                           min="1" 
+                           max="10"
+                           onchange="updateGuestCount('${member}', this.value)"
+                           ${memberData.status !== 'coming' ? 'disabled' : ''}>
+                    <button class="rsvp-btn ${memberData.status}" 
+                            onclick="toggleRSVP('${member}')">
+                        ${memberData.status === 'coming' ? 'Coming' : 
+                          memberData.status === 'not-coming' ? 'Not Coming' : 'Not Sure'}
+                    </button>
+                `;
+                
+                rsvpContainer.appendChild(rsvpRow);
+            });
+        }
+        
+        function toggleRSVP(member) {
+            const current = rsvpData[member].status;
+            if (current === 'pending') rsvpData[member].status = 'coming';
+            else if (current === 'coming') rsvpData[member].status = 'not-coming';
+            else rsvpData[member].status = 'pending';
+            
+            updateDisplay();
+            saveStateToURL();
+        }
+        
+        function updateGuestCount(member, count) {
+            rsvpData[member].guests = parseInt(count) || 1;
+            updateGuestSummary();
+            saveStateToURL();
+        }
+        
+        function updateGuestSummary() {
+            const totalGuests = familyMembers
+                .filter(member => rsvpData[member].status === 'coming')
+                .reduce((sum, member) => sum + rsvpData[member].guests, 0);
+            
+            const comingCount = familyMembers
+                .filter(member => rsvpData[member].status === 'coming').length;
+            
+            document.getElementById('guest-summary').innerHTML = `
+                <strong>${totalGuests} guests total</strong><br>
+                ${comingCount} families confirmed
+            `;
+        }
+        
+        function updateBringList() {
+            const bringContainer = document.getElementById('bring-list');
+            bringContainer.innerHTML = '';
+            
+            bringItems.forEach(item => {
+                const itemData = bringData[item];
+                const itemRow = document.createElement('div');
+                itemRow.className = 'bring-item';
+                
+                itemRow.innerHTML = `
+                    <div class="item-name">${item}</div>
+                    <div class="item-status ${itemData.assigned ? 'item-covered' : 'item-needed'}"
+                         onclick="claimItem('${item}')">
+                        ${itemData.assigned ? `✓ ${itemData.person} (tap to change)` : 'Tap to claim'}
+                    </div>
+                `;
+                
+                bringContainer.appendChild(itemRow);
+            });
+        }
+        
+        function claimItem(item) {
+            // Show selection modal
+            document.getElementById('modal-title').textContent = `Who will bring ${item}?`;
+            const personList = document.getElementById('person-list');
+            personList.innerHTML = '';
+            
+            familyMembers.forEach(person => {
+                const btn = document.createElement('button');
+                btn.className = 'person-btn';
+                btn.textContent = person;
+                btn.onclick = () => {
+                    bringData[item] = { assigned: true, person: person };
+                    updateBringList();
+                    closeModal();
+                    saveStateToURL();
+                };
+                personList.appendChild(btn);
+            });
+            
+            document.getElementById('selection-modal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('selection-modal').style.display = 'none';
+        }
+        
+        function editItems() {
+            updateEditList();
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+        
+        function updateEditList() {
+            const editList = document.getElementById('edit-list');
+            editList.innerHTML = '';
+            
+            bringItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'edit-item';
+                itemDiv.innerHTML = `
+                    <span>${item}</span>
+                    <button class="remove-btn" onclick="removeItem('${item}')">Remove</button>
+                `;
+                editList.appendChild(itemDiv);
+            });
+        }
+        
+        function removeItem(item) {
+            if (confirm(`Remove "${item}" from the list?`)) {
+                bringItems = bringItems.filter(i => i !== item);
+                delete bringData[item];
+                updateEditList();
+                updateBringList();
+                saveStateToURL();
+            }
+        }
+        
+        function addNewItem() {
+            const input = document.getElementById('new-item-input');
+            const newItem = input.value.trim();
+            if (newItem && !bringItems.includes(newItem)) {
+                bringItems.push(newItem);
+                bringData[newItem] = { assigned: false, person: null };
+                input.value = '';
+                updateEditList();
+                updateBringList();
+                saveStateToURL();
+            }
+        }
+        
+        function closeEditModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+        
+        function editHost() {
+            const hostList = document.getElementById('host-list');
+            hostList.innerHTML = '';
+            
+            // Add all family members as potential hosts
+            familyMembers.forEach(person => {
+                const btn = document.createElement('button');
+                btn.className = 'person-btn';
+                btn.textContent = person;
+                btn.onclick = () => {
+                    currentHost = person;
+                    updateDisplay();
+                    closeHostModal();
+                    saveStateToURL();
+                };
+                hostList.appendChild(btn);
+            });
+            
+            document.getElementById('host-modal').style.display = 'flex';
+        }
+        
+        function closeHostModal() {
+            document.getElementById('host-modal').style.display = 'none';
+        }
+        
+        function editDate() {
+            // Pre-fill with current date or next Saturday
+            const dateInput = document.getElementById('date-input');
+            if (currentDate) {
+                dateInput.value = currentDate;
+            } else {
+                // Set to next Saturday
+                const today = new Date();
+                const daysUntilSaturday = (6 - today.getDay()) % 7;
+                const nextSaturday = new Date(today);
+                nextSaturday.setDate(today.getDate() + (daysUntilSaturday === 0 ? 7 : daysUntilSaturday));
+                dateInput.value = nextSaturday.toISOString().split('T')[0];
+            }
+            
+            document.getElementById('date-modal').style.display = 'flex';
+        }
+        
+        function saveDate() {
+            const dateInput = document.getElementById('date-input');
+            if (dateInput.value) {
+                currentDate = dateInput.value;
+                updateDisplay();
+                saveStateToURL();
+            }
+            closeDateModal();
+        }
+        
+        function closeDateModal() {
+            document.getElementById('date-modal').style.display = 'none';
+        }
+        
+        function shareSummary() {
+            const host = getCurrentHost();
+            const date = getNextSaturday();
+            const coming = familyMembers.filter(m => rsvpData[m].status === 'coming');
+            const totalGuests = coming.reduce((sum, member) => sum + rsvpData[member].guests, 0);
+            
+            const coveredItems = bringItems
+                .filter(item => bringData[item].assigned)
+                .map(item => `${item}: ${bringData[item].person}`)
+                .join('\n');
+            
+            const neededItems = bringItems
+                .filter(item => !bringData[item].assigned)
+                .join(', ');
+            
+            let message = `🕯️ *Shlagman Shabs Plan*\n\n`;
+            message += `📅 *${date}*\n`;
+            message += `🏠 *Host:* ${host}\n`;
+            message += `👥 *${totalGuests} guests* (${coming.length} families)\n\n`;
+            
+            if (coveredItems) {
+                message += `✅ *Bringing:*\n${coveredItems}\n\n`;
+            }
+            
+            if (neededItems) {
+                message += `❓ *Still needed:* ${neededItems}\n\n`;
+            }
+            
+            message += `🔗 RSVP & update: ${window.location.href}`;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(message).then(() => {
+                alert('📱 Summary with live link copied!\nPaste it into WhatsApp - anyone can click the link to view & update!');
+            }).catch(() => {
+                alert('Summary ready:\n\n' + message);
+            });
+        }
+        
+        // Initialize the app
+        loadStateFromURL();  // Load any existing state from URL first
+        initializeBringData();
+        updateDisplay();
+        
+        // Close modals when clicking outside
+        document.getElementById('selection-modal').onclick = function(e) {
+            if (e.target === this) closeModal();
+        }
+        
+        document.getElementById('edit-modal').onclick = function(e) {
+            if (e.target === this) closeEditModal();
+        }
+        
+        document.getElementById('host-modal').onclick = function(e) {
+            if (e.target === this) closeHostModal();
+        }
+        
+        document.getElementById('date-modal').onclick = function(e) {
+            if (e.target === this) closeDateModal();
+        }
+    </script>
+</body>
 </html>
