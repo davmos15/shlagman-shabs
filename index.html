@@ -195,6 +195,13 @@
         .item-name {
             font-size: 16px;
             color: #2d3748;
+            position: relative;
+        }
+        
+        .item-name:hover::after {
+            content: " ✏️";
+            font-size: 12px;
+            opacity: 0.6;
         }
         
         .item-status {
@@ -755,7 +762,7 @@
                     itemRow.className = 'bring-item';
                     
                     itemRow.innerHTML = `
-                        <div class="item-name">${item}</div>
+                        <div class="item-name" onclick="editItemName('${item}')" style="cursor: pointer; text-decoration: underline; text-decoration-style: dotted;">${item}</div>
                         <div class="item-status ${itemData.assigned ? 'item-covered' : 'item-needed'}"
                              onclick="claimItem('${item}')">
                             ${itemData.assigned ? `✓ ${itemData.person} (tap to change)` : 'Tap to claim'}
@@ -954,6 +961,33 @@
             updateAdditionalGuestsList();
             updateGuestSummary();
             saveStateToFirebase();
+        }
+        
+        function editItemName(oldName) {
+            const newName = prompt(`Edit item name:`, oldName);
+            if (newName && newName.trim() && newName !== oldName) {
+                const trimmedName = newName.trim();
+                
+                // Check if new name already exists
+                if (bringItems.includes(trimmedName)) {
+                    alert('An item with this name already exists!');
+                    return;
+                }
+                
+                // Update the item name in bringItems array
+                const index = bringItems.indexOf(oldName);
+                if (index > -1) {
+                    bringItems[index] = trimmedName;
+                }
+                
+                // Move the data from old key to new key
+                bringData[trimmedName] = bringData[oldName];
+                delete bringData[oldName];
+                
+                // Update the display and save
+                updateBringList();
+                saveStateToFirebase();
+            }
         }
         
         async function shareSummary() {
