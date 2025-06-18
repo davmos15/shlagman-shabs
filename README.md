@@ -1,6 +1,6 @@
 # Shlagman Shabs Plan
 
-A real-time web application for coordinating weekly Shabbat (Saturday) lunch gatherings among family members. The app allows families to RSVP, coordinate who brings what dishes, and share updates via WhatsApp.
+A real-time web application for coordinating weekly Shabbat lunch and Dinner gatherings among family members. The app allows families to RSVP, coordinate who brings what dishes, and share updates via WhatsApp.
 
 ## Features
 

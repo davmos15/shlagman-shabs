@@ -436,6 +436,21 @@
         </div>
     </div>
 
+    <!-- Add Guests Modal -->
+    <div class="modal" id="guests-modal">
+        <div class="modal-content">
+            <h3>Add Additional Guests</h3>
+            <input type="text" id="guest-name-input" placeholder="Guest name..." 
+                   style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin: 10px 0;"
+                   onkeypress="if(event.key==='Enter') addGuest()">
+            <div id="additional-guests-list"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn primary" onclick="addGuest()">Add Guest</button>
+                <button class="modal-btn secondary" onclick="closeGuestsModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -454,7 +469,7 @@
         
         // Family members from the WhatsApp group (alphabetical order)
         const familyMembers = [
-            'Adi', 'Bobba', 'Extras', 'Gabe', 'Gilla', 
+            'Adi', 'Bobba', 'Gabe', 'Gilla', 
             'Meyerowitz', 'Mosbergs', 'Moskow 29b', 'Moskow Carlingford', 'PBs'
         ];
         
@@ -462,16 +477,14 @@
         const hostRotation = ['Gilla', 'Ruth', 'Tamar'];
         
         // Items typically needed for Shabbat lunch
-        let bringItems = [
-            'Challah', 'Wine/Grape Juice', 'Salad', 'Side Dish', 
-            'Dessert', 'Drinks', 'Appetizer', 'Fruit'
-        ];
+        let bringItems = [];
         
         // State management
         let rsvpData = {};
         let bringData = {};
         let currentHost = '';
         let currentDate = '';
+        let additionalGuests = [];
         
         // Initialize family member RSVPs
         familyMembers.forEach(member => {
@@ -509,6 +522,7 @@
                     currentHost,
                     currentDate,
                     bringItems,
+                    additionalGuests,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
@@ -533,6 +547,7 @@
                     if (data.currentHost) currentHost = data.currentHost;
                     if (data.currentDate) currentDate = data.currentDate;
                     if (data.bringItems) bringItems = data.bringItems;
+                    if (data.additionalGuests) additionalGuests = data.additionalGuests;
                     
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
@@ -566,6 +581,7 @@
                     if (data.currentHost) currentHost = data.currentHost;
                     if (data.currentDate) currentDate = data.currentDate;
                     if (data.bringItems) bringItems = data.bringItems;
+                    if (data.additionalGuests) additionalGuests = data.additionalGuests;
                     
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
@@ -606,28 +622,32 @@
         
         function getNextSaturday() {
             // Use manually set date if available
+            let dateObj;
             if (currentDate) {
-                const date = new Date(currentDate);
-                return date.toLocaleDateString('en-AU', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                });
+                dateObj = new Date(currentDate);
+            } else {
+                // Otherwise calculate next Saturday
+                const today = new Date();
+                const daysUntilSaturday = (6 - today.getDay()) % 7;
+                dateObj = new Date(today);
+                dateObj.setDate(today.getDate() + (daysUntilSaturday === 0 ? 7 : daysUntilSaturday));
             }
             
-            // Otherwise calculate next Saturday
-            const today = new Date();
-            const daysUntilSaturday = (6 - today.getDay()) % 7;
-            const nextSaturday = new Date(today);
-            nextSaturday.setDate(today.getDate() + (daysUntilSaturday === 0 ? 7 : daysUntilSaturday));
-            
-            return nextSaturday.toLocaleDateString('en-AU', { 
-                weekday: 'long', 
+            const dayOfWeek = dateObj.getDay();
+            const formattedDate = dateObj.toLocaleDateString('en-AU', { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
             });
+            
+            // Return appropriate format based on day of week
+            if (dayOfWeek === 6) { // Saturday
+                return `Shabbat Lunch - ${formattedDate}`;
+            } else if (dayOfWeek === 5) { // Friday
+                return `Friday Night Dinner - ${formattedDate}`;
+            } else {
+                return formattedDate;
+            }
         }
         
         function updateDisplay() {
@@ -668,6 +688,16 @@
                 
                 rsvpContainer.appendChild(rsvpRow);
             });
+            
+            // Add "Add Guests" button at the bottom
+            const addGuestsBtn = document.createElement('div');
+            addGuestsBtn.style.cssText = 'padding: 15px 20px; text-align: center;';
+            addGuestsBtn.innerHTML = `
+                <button class="edit-btn" onclick="showAddGuestsModal()" style="width: 100%;">
+                    ➕ Add Guests
+                </button>
+            `;
+            rsvpContainer.appendChild(addGuestsBtn);
         }
         
         function toggleRSVP(member) {
@@ -687,9 +717,12 @@
         }
         
         function updateGuestSummary() {
-            const totalGuests = familyMembers
+            const familyGuests = familyMembers
                 .filter(member => rsvpData[member].status === 'coming')
                 .reduce((sum, member) => sum + rsvpData[member].guests, 0);
+            
+            const additionalGuestsCount = additionalGuests.filter(g => g.status === 'coming').length;
+            const totalGuests = familyGuests + additionalGuestsCount;
             
             const comingCount = familyMembers
                 .filter(member => rsvpData[member].status === 'coming').length;
@@ -697,6 +730,7 @@
             document.getElementById('guest-summary').innerHTML = `
                 <strong>${totalGuests} guests total</strong><br>
                 ${comingCount} families confirmed
+                ${additionalGuestsCount > 0 ? `<br>${additionalGuestsCount} additional guests` : ''}
             `;
         }
         
@@ -704,21 +738,33 @@
             const bringContainer = document.getElementById('bring-list');
             bringContainer.innerHTML = '';
             
-            bringItems.forEach(item => {
-                const itemData = bringData[item];
-                const itemRow = document.createElement('div');
-                itemRow.className = 'bring-item';
-                
-                itemRow.innerHTML = `
-                    <div class="item-name">${item}</div>
-                    <div class="item-status ${itemData.assigned ? 'item-covered' : 'item-needed'}"
-                         onclick="claimItem('${item}')">
-                        ${itemData.assigned ? `✓ ${itemData.person} (tap to change)` : 'Tap to claim'}
+            if (bringItems.length === 0) {
+                // Show "Add Items" button when list is empty
+                bringContainer.innerHTML = `
+                    <div style="padding: 30px 20px; text-align: center;">
+                        <p style="color: #718096; margin-bottom: 15px;">No items added yet</p>
+                        <button class="edit-btn" onclick="editItems()" style="padding: 10px 20px;">
+                            ➕ Add Items
+                        </button>
                     </div>
                 `;
-                
-                bringContainer.appendChild(itemRow);
-            });
+            } else {
+                bringItems.forEach(item => {
+                    const itemData = bringData[item];
+                    const itemRow = document.createElement('div');
+                    itemRow.className = 'bring-item';
+                    
+                    itemRow.innerHTML = `
+                        <div class="item-name">${item}</div>
+                        <div class="item-status ${itemData.assigned ? 'item-covered' : 'item-needed'}"
+                             onclick="claimItem('${item}')">
+                            ${itemData.assigned ? `✓ ${itemData.person} (tap to change)` : 'Tap to claim'}
+                        </div>
+                    `;
+                    
+                    bringContainer.appendChild(itemRow);
+                });
+            }
         }
         
         function claimItem(item) {
@@ -850,11 +896,73 @@
             document.getElementById('date-modal').style.display = 'none';
         }
         
+        function showAddGuestsModal() {
+            updateAdditionalGuestsList();
+            document.getElementById('guests-modal').style.display = 'flex';
+        }
+        
+        function closeGuestsModal() {
+            document.getElementById('guests-modal').style.display = 'none';
+        }
+        
+        function addGuest() {
+            const input = document.getElementById('guest-name-input');
+            const guestName = input.value.trim();
+            if (guestName) {
+                additionalGuests.push({ name: guestName, status: 'coming' });
+                input.value = '';
+                updateAdditionalGuestsList();
+                updateGuestSummary();
+                saveStateToFirebase();
+            }
+        }
+        
+        function updateAdditionalGuestsList() {
+            const listContainer = document.getElementById('additional-guests-list');
+            listContainer.innerHTML = '';
+            
+            if (additionalGuests.length > 0) {
+                listContainer.innerHTML = '<h4 style="margin: 10px 0;">Additional Guests:</h4>';
+                additionalGuests.forEach((guest, index) => {
+                    const guestDiv = document.createElement('div');
+                    guestDiv.className = 'edit-item';
+                    guestDiv.innerHTML = `
+                        <span>${guest.name}</span>
+                        <div>
+                            <button class="rsvp-btn ${guest.status}" 
+                                    onclick="toggleAdditionalGuestStatus(${index})" 
+                                    style="margin-right: 5px; padding: 4px 10px; font-size: 12px;">
+                                ${guest.status === 'coming' ? 'Coming' : 'Not Coming'}
+                            </button>
+                            <button class="remove-btn" onclick="removeAdditionalGuest(${index})">Remove</button>
+                        </div>
+                    `;
+                    listContainer.appendChild(guestDiv);
+                });
+            }
+        }
+        
+        function toggleAdditionalGuestStatus(index) {
+            additionalGuests[index].status = additionalGuests[index].status === 'coming' ? 'not-coming' : 'coming';
+            updateAdditionalGuestsList();
+            updateGuestSummary();
+            saveStateToFirebase();
+        }
+        
+        function removeAdditionalGuest(index) {
+            additionalGuests.splice(index, 1);
+            updateAdditionalGuestsList();
+            updateGuestSummary();
+            saveStateToFirebase();
+        }
+        
         async function shareSummary() {
             const host = getCurrentHost();
             const date = getNextSaturday();
             const coming = familyMembers.filter(m => rsvpData[m].status === 'coming');
-            const totalGuests = coming.reduce((sum, member) => sum + rsvpData[member].guests, 0);
+            const familyGuests = coming.reduce((sum, member) => sum + rsvpData[member].guests, 0);
+            const additionalGuestsCount = additionalGuests.filter(g => g.status === 'coming').length;
+            const totalGuests = familyGuests + additionalGuestsCount;
             
             const coveredItems = bringItems
                 .filter(item => bringData[item].assigned)
@@ -870,7 +978,7 @@
             let message = `🕯️ *Shlagman Shabs Plan*\n\n`;
             message += `📅 *${date}*\n`;
             message += `🏠 *Host:* ${host}\n`;
-            message += `👥 *${totalGuests} guests* (${coming.length} families)\n\n`;
+            message += `👥 *${totalGuests} guests* (${coming.length} families${additionalGuestsCount > 0 ? ` + ${additionalGuestsCount} additional` : ''})\n\n`;
             
             if (coveredItems) {
                 message += `✅ *Bringing:*\n${coveredItems}\n\n`;
@@ -923,6 +1031,10 @@
         
         document.getElementById('date-modal').onclick = function(e) {
             if (e.target === this) closeDateModal();
+        }
+        
+        document.getElementById('guests-modal').onclick = function(e) {
+            if (e.target === this) closeGuestsModal();
         }
     </script>
 </body>
