@@ -450,10 +450,9 @@
             <input type="text" id="guest-name-input" placeholder="Guest name..." 
                    style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin: 10px 0;"
                    onkeypress="if(event.key==='Enter') addGuest()">
-            <div id="additional-guests-list"></div>
             <div class="modal-buttons">
                 <button class="modal-btn primary" onclick="addGuest()">Add Guest</button>
-                <button class="modal-btn secondary" onclick="closeGuestsModal()">Done</button>
+                <button class="modal-btn secondary" onclick="closeGuestsModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -495,7 +494,7 @@
         
         // Initialize family member RSVPs
         familyMembers.forEach(member => {
-            rsvpData[member] = { status: 'pending', guests: 1 };
+            rsvpData[member] = { status: 'pending', guests: 1, previousGuests: 1 };
         });
         
         // Firebase Functions
@@ -559,7 +558,12 @@
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
                         if (!rsvpData[member]) {
-                            rsvpData[member] = { status: 'pending', guests: 1 };
+                            rsvpData[member] = { status: 'pending', guests: 1, previousGuests: 1 };
+                        } else {
+                            // Ensure previousGuests exists for existing data
+                            if (rsvpData[member].previousGuests === undefined) {
+                                rsvpData[member].previousGuests = rsvpData[member].guests || 1;
+                            }
                         }
                     });
                     
@@ -593,7 +597,12 @@
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
                         if (!rsvpData[member]) {
-                            rsvpData[member] = { status: 'pending', guests: 1 };
+                            rsvpData[member] = { status: 'pending', guests: 1, previousGuests: 1 };
+                        } else {
+                            // Ensure previousGuests exists for existing data
+                            if (rsvpData[member].previousGuests === undefined) {
+                                rsvpData[member].previousGuests = rsvpData[member].guests || 1;
+                            }
                         }
                     });
                     
@@ -672,6 +681,7 @@
             const rsvpContainer = document.getElementById('rsvp-list');
             rsvpContainer.innerHTML = '';
             
+            // Display family members
             familyMembers.forEach(member => {
                 const memberData = rsvpData[member];
                 const rsvpRow = document.createElement('div');
@@ -696,6 +706,33 @@
                 rsvpContainer.appendChild(rsvpRow);
             });
             
+            // Display additional guests
+            additionalGuests.forEach((guest, index) => {
+                const rsvpRow = document.createElement('div');
+                rsvpRow.className = 'rsvp-grid';
+                
+                rsvpRow.innerHTML = `
+                    <div class="family-member" style="display: flex; align-items: center;">
+                        ${guest.name}
+                        <span style="color: #718096; font-size: 12px; margin-left: 5px;">(guest)</span>
+                        <button onclick="removeAdditionalGuest(${index})" style="margin-left: auto; background: none; border: none; color: #e53e3e; cursor: pointer; font-size: 16px;">×</button>
+                    </div>
+                    <input type="number" 
+                           class="guest-count" 
+                           value="${guest.guests || 1}" 
+                           min="1" 
+                           max="10"
+                           onchange="updateAdditionalGuestCount(${index}, this.value)"
+                           ${guest.status !== 'coming' ? 'disabled' : ''}>
+                    <button class="rsvp-btn ${guest.status}" 
+                            onclick="toggleAdditionalGuestStatus(${index})">
+                        ${guest.status === 'coming' ? 'Coming' : 'Not Coming'}
+                    </button>
+                `;
+                
+                rsvpContainer.appendChild(rsvpRow);
+            });
+            
             // Add "Add Guests" button at the bottom
             const addGuestsBtn = document.createElement('div');
             addGuestsBtn.style.cssText = 'padding: 15px 20px; text-align: center;';
@@ -709,16 +746,32 @@
         
         function toggleRSVP(member) {
             const current = rsvpData[member].status;
-            if (current === 'pending') rsvpData[member].status = 'coming';
-            else if (current === 'coming') rsvpData[member].status = 'not-coming';
-            else rsvpData[member].status = 'pending';
+            
+            if (current === 'pending') {
+                rsvpData[member].status = 'coming';
+                // Restore previous guest count when switching to coming
+                rsvpData[member].guests = rsvpData[member].previousGuests || 1;
+            } else if (current === 'coming') {
+                // Store current guest count before switching to not-coming
+                rsvpData[member].previousGuests = rsvpData[member].guests;
+                rsvpData[member].status = 'not-coming';
+                rsvpData[member].guests = 0;
+            } else {
+                rsvpData[member].status = 'pending';
+                rsvpData[member].guests = 0;
+            }
             
             updateDisplay();
             saveStateToFirebase();
         }
         
         function updateGuestCount(member, count) {
-            rsvpData[member].guests = parseInt(count) || 1;
+            const newCount = parseInt(count) || 1;
+            rsvpData[member].guests = newCount;
+            // Store as previous count for when they switch status
+            if (rsvpData[member].status === 'coming') {
+                rsvpData[member].previousGuests = newCount;
+            }
             updateGuestSummary();
             saveStateToFirebase();
         }
@@ -728,16 +781,21 @@
                 .filter(member => rsvpData[member].status === 'coming')
                 .reduce((sum, member) => sum + rsvpData[member].guests, 0);
             
-            const additionalGuestsCount = additionalGuests.filter(g => g.status === 'coming').length;
-            const totalGuests = familyGuests + additionalGuestsCount;
+            const additionalGuestsTotal = additionalGuests
+                .filter(g => g.status === 'coming')
+                .reduce((sum, guest) => sum + (guest.guests || 1), 0);
+            
+            const totalGuests = familyGuests + additionalGuestsTotal;
             
             const comingCount = familyMembers
                 .filter(member => rsvpData[member].status === 'coming').length;
             
+            const additionalGuestsCount = additionalGuests.filter(g => g.status === 'coming').length;
+            
             document.getElementById('guest-summary').innerHTML = `
                 <strong>${totalGuests} guests total</strong><br>
                 ${comingCount} families confirmed
-                ${additionalGuestsCount > 0 ? `<br>${additionalGuestsCount} additional guests` : ''}
+                ${additionalGuestsCount > 0 ? `<br>${additionalGuestsCount} additional ${additionalGuestsCount === 1 ? 'guest' : 'guests'}` : ''}
             `;
         }
         
@@ -904,7 +962,8 @@
         }
         
         function showAddGuestsModal() {
-            updateAdditionalGuestsList();
+            document.getElementById('guest-name-input').value = '';
+            document.getElementById('guest-name-input').focus();
             document.getElementById('guests-modal').style.display = 'flex';
         }
         
@@ -916,49 +975,51 @@
             const input = document.getElementById('guest-name-input');
             const guestName = input.value.trim();
             if (guestName) {
-                additionalGuests.push({ name: guestName, status: 'coming' });
+                additionalGuests.push({ name: guestName, status: 'coming', guests: 1, previousGuests: 1 });
                 input.value = '';
-                updateAdditionalGuestsList();
+                closeGuestsModal();
+                updateRSVPList();
                 updateGuestSummary();
                 saveStateToFirebase();
             }
         }
         
-        function updateAdditionalGuestsList() {
-            const listContainer = document.getElementById('additional-guests-list');
-            listContainer.innerHTML = '';
-            
-            if (additionalGuests.length > 0) {
-                listContainer.innerHTML = '<h4 style="margin: 10px 0;">Additional Guests:</h4>';
-                additionalGuests.forEach((guest, index) => {
-                    const guestDiv = document.createElement('div');
-                    guestDiv.className = 'edit-item';
-                    guestDiv.innerHTML = `
-                        <span>${guest.name}</span>
-                        <div>
-                            <button class="rsvp-btn ${guest.status}" 
-                                    onclick="toggleAdditionalGuestStatus(${index})" 
-                                    style="margin-right: 5px; padding: 4px 10px; font-size: 12px;">
-                                ${guest.status === 'coming' ? 'Coming' : 'Not Coming'}
-                            </button>
-                            <button class="remove-btn" onclick="removeAdditionalGuest(${index})">Remove</button>
-                        </div>
-                    `;
-                    listContainer.appendChild(guestDiv);
-                });
-            }
-        }
         
         function toggleAdditionalGuestStatus(index) {
-            additionalGuests[index].status = additionalGuests[index].status === 'coming' ? 'not-coming' : 'coming';
-            updateAdditionalGuestsList();
+            const guest = additionalGuests[index];
+            
+            if (guest.status === 'coming') {
+                // Store current guest count before switching to not-coming
+                guest.previousGuests = guest.guests;
+                guest.status = 'not-coming';
+                guest.guests = 0;
+            } else {
+                guest.status = 'coming';
+                // Restore previous guest count when switching to coming
+                guest.guests = guest.previousGuests || 1;
+            }
+            
+            updateRSVPList();
             updateGuestSummary();
             saveStateToFirebase();
         }
         
         function removeAdditionalGuest(index) {
-            additionalGuests.splice(index, 1);
-            updateAdditionalGuestsList();
+            if (confirm('Remove this guest?')) {
+                additionalGuests.splice(index, 1);
+                updateRSVPList();
+                updateGuestSummary();
+                saveStateToFirebase();
+            }
+        }
+        
+        function updateAdditionalGuestCount(index, count) {
+            const newCount = parseInt(count) || 1;
+            additionalGuests[index].guests = newCount;
+            // Store as previous count for when they switch status
+            if (additionalGuests[index].status === 'coming') {
+                additionalGuests[index].previousGuests = newCount;
+            }
             updateGuestSummary();
             saveStateToFirebase();
         }
@@ -995,8 +1056,10 @@
             const date = getNextSaturday();
             const coming = familyMembers.filter(m => rsvpData[m].status === 'coming');
             const familyGuests = coming.reduce((sum, member) => sum + rsvpData[member].guests, 0);
-            const additionalGuestsCount = additionalGuests.filter(g => g.status === 'coming').length;
-            const totalGuests = familyGuests + additionalGuestsCount;
+            const additionalGuestsTotal = additionalGuests
+                .filter(g => g.status === 'coming')
+                .reduce((sum, guest) => sum + (guest.guests || 1), 0);
+            const totalGuests = familyGuests + additionalGuestsTotal;
             
             const coveredItems = bringItems
                 .filter(item => bringData[item].assigned)
