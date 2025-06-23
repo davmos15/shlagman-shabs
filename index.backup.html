@@ -102,16 +102,6 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        .section-content {
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            max-height: 1000px;
-        }
-        
-        .section-content.collapsed {
-            max-height: 0;
-        }
-        
         .section-header {
             background: #edf2f7;
             padding: 15px 20px;
@@ -119,24 +109,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
-        
-        .section-header h3 {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .collapse-arrow {
-            display: inline-block;
-            transition: transform 0.3s;
-            font-size: 0.8em;
-        }
-        
-        .collapse-arrow.collapsed {
-            transform: rotate(-90deg);
         }
         
         .edit-btn {
@@ -383,16 +355,12 @@
 <body>
     <!-- Sync Status Indicator -->
     <div id="sync-status" class="sync-status sync-offline">⚫ Connecting...</div>
-    
 
-    <div class="container" id="main-view">
+    <div class="container">
         <div class="header">
             <h1>🕯️ Shlagman Shabs Plan</h1>
-            <div class="date" id="current-date" onclick="editDate()" style="cursor: pointer;"></div>
-            <div class="time-section" style="margin-top: 10px; font-size: 18px; color: white; cursor: pointer;" onclick="editTime()">
-                <span style="margin-right: 5px;">🕑</span>
-                <span id="current-time">7:00 PM</span>
-            </div>
+            <div class="date" id="current-date"></div>
+            <button class="edit-btn" onclick="editDate()" style="margin-top: 10px;">📅 Edit Date</button>
         </div>
         
         <div class="host-info">
@@ -404,72 +372,25 @@
         </div>
         
         <div class="section">
-            <div class="section-header" onclick="toggleSection('rsvp')">
-                <h3>👥 Who's Coming? <span class="collapse-arrow" id="rsvp-arrow">▼</span></h3>
+            <div class="section-header">
+                <h3>👥 Who's Coming?</h3>
             </div>
-            <div class="section-content" id="rsvp-content">
-                <div id="rsvp-list"></div>
-            </div>
+            <div id="rsvp-list"></div>
         </div>
         
         <div class="total-guests" id="guest-summary"></div>
         
         <div class="section">
-            <div class="section-header" onclick="toggleSection('bring')">
-                <h3>🍽️ Menu <span class="collapse-arrow" id="bring-arrow">▼</span></h3>
-                <button class="edit-btn" onclick="event.stopPropagation(); editItems()">✏️ Edit Items</button>
+            <div class="section-header">
+                <h3>🍽️ What to Bring</h3>
+                <button class="edit-btn" onclick="editItems()">✏️ Edit Items</button>
             </div>
-            <div class="section-content" id="bring-content">
-                <div id="bring-list"></div>
-            </div>
+            <div id="bring-list"></div>
         </div>
         
         <button class="summary-btn" onclick="shareSummary()">
-            📱 Share Update
+            📱 Share Update to WhatsApp
         </button>
-        
-        <button class="summary-btn" onclick="showHistory()" style="background: #718096; margin-top: 10px;">
-            📅 History
-        </button>
-        
-    </div>
-
-    <!-- History View -->
-    <div class="container" id="history-view" style="display: none;">
-        <div class="header">
-            <h1>📅 Shabbat History</h1>
-            <button class="edit-btn" onclick="showMainView()" style="margin-top: 10px;">← Back to Current</button>
-        </div>
-        
-        <div style="margin: 20px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <label style="display: block; margin-bottom: 10px; color: #4a5568; font-weight: 600;">Select a past event:</label>
-            <select id="history-select" onchange="loadHistoryEvent()" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 16px;">
-                <option value="">Select an event...</option>
-            </select>
-        </div>
-        
-        <div id="history-content" style="display: none;">
-            <div class="host-info">
-                <h2>Host</h2>
-                <div class="host-name" id="history-host"></div>
-            </div>
-            
-            <div class="section">
-                <div class="section-header">
-                    <h3>👥 Who Came</h3>
-                </div>
-                <div id="history-rsvp-list" style="padding: 20px;"></div>
-            </div>
-            
-            <div class="total-guests" id="history-guest-summary"></div>
-            
-            <div class="section">
-                <div class="section-header">
-                    <h3>🍽️ Menu</h3>
-                </div>
-                <div id="history-bring-list" style="padding: 20px;"></div>
-            </div>
-        </div>
     </div>
 
     <!-- Selection Modal -->
@@ -486,7 +407,7 @@
     <!-- Edit Items Modal -->
     <div class="modal" id="edit-modal">
         <div class="modal-content">
-            <h3>Edit Menu</h3>
+            <h3>Edit What to Bring</h3>
             <div id="edit-list"></div>
             <input type="text" id="new-item-input" placeholder="Add new item..." 
                    style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin: 10px 0;"
@@ -518,43 +439,6 @@
             <div class="modal-buttons">
                 <button class="modal-btn primary" onclick="saveDate()">Save Date</button>
                 <button class="modal-btn secondary" onclick="closeDateModal()">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Time Selection Modal -->
-    <div class="modal" id="time-modal">
-        <div class="modal-content">
-            <h3>Select Time</h3>
-            <div style="display: flex; gap: 10px; margin: 15px 0;">
-                <select id="hour-select" style="flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7" selected>7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                    <option value="11">11</option>
-                    <option value="12">12</option>
-                </select>
-                <select id="minute-select" style="flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
-                    <option value="00" selected>00</option>
-                    <option value="15">15</option>
-                    <option value="30">30</option>
-                    <option value="45">45</option>
-                </select>
-                <select id="ampm-select" style="flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
-                    <option value="AM">AM</option>
-                    <option value="PM" selected>PM</option>
-                </select>
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-btn primary" onclick="saveTime()">Save</button>
-                <button class="modal-btn secondary" onclick="closeTimeModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -591,7 +475,7 @@
         
         // Family members from the WhatsApp group (alphabetical order)
         const familyMembers = [
-            'Adi & Gabe', 'Bobba', 'Gilla', 'Maueberger',
+            'Adi', 'Bobba', 'Gabe', 'Gilla', 
             'Meyerowitz', 'Mosbergs', 'Moskow 29b', 'Moskow Carlingford', 'PBs'
         ];
         
@@ -606,7 +490,6 @@
         let bringData = {};
         let currentHost = '';
         let currentDate = '';
-        let currentTime = '7:00 PM'; // Default time
         let additionalGuests = [];
         
         // Initialize family member RSVPs
@@ -644,7 +527,6 @@
                     bringData,
                     currentHost,
                     currentDate,
-                    currentTime,
                     bringItems,
                     additionalGuests,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
@@ -652,8 +534,9 @@
                 
                 await db.collection('shabbat-plans').doc('current').set(state);
                 updateSyncStatus('online');
+                console.log('✅ State saved to Firebase');
             } catch (error) {
-                console.error('Failed to save to Firebase:', error);
+                console.error('❌ Failed to save to Firebase:', error);
                 updateSyncStatus('offline');
             }
         }
@@ -669,7 +552,6 @@
                     if (data.bringData) bringData = data.bringData;
                     if (data.currentHost) currentHost = data.currentHost;
                     if (data.currentDate) currentDate = data.currentDate;
-                    if (data.currentTime) currentTime = data.currentTime;
                     if (data.bringItems) bringItems = data.bringItems;
                     if (data.additionalGuests) additionalGuests = data.additionalGuests;
                     
@@ -688,12 +570,13 @@
                     initializeBringData();
                     updateDisplay();
                     updateSyncStatus('online');
+                    console.log('✅ State loaded from Firebase');
                 } else {
                     // No existing data, create initial state
                     await saveStateToFirebase();
                 }
             } catch (error) {
-                console.error('Failed to load from Firebase:', error);
+                console.error('❌ Failed to load from Firebase:', error);
                 updateSyncStatus('offline');
             }
         }
@@ -708,7 +591,6 @@
                     if (data.bringData) bringData = data.bringData;
                     if (data.currentHost) currentHost = data.currentHost;
                     if (data.currentDate) currentDate = data.currentDate;
-                    if (data.currentTime) currentTime = data.currentTime;
                     if (data.bringItems) bringItems = data.bringItems;
                     if (data.additionalGuests) additionalGuests = data.additionalGuests;
                     
@@ -727,9 +609,10 @@
                     initializeBringData();
                     updateDisplay();
                     updateSyncStatus('online');
+                    console.log('🔄 Real-time update received');
                 }
             }, (error) => {
-                console.error('Real-time sync error:', error);
+                console.error('❌ Real-time sync error:', error);
                 updateSyncStatus('offline');
             });
         }
@@ -753,25 +636,17 @@
             return hostRotation[weekNumber % hostRotation.length];
         }
         
-        function getNextFridayNight() {
+        function getNextSaturday() {
             // Use manually set date if available
             let dateObj;
             if (currentDate) {
                 dateObj = new Date(currentDate);
             } else {
-                // Check if July 4th, 2025 is the next Friday
+                // Otherwise calculate next Saturday
                 const today = new Date();
-                const july4 = new Date('2025-07-04');
-                
-                // If July 4th is in the future and is a Friday, use it
-                if (july4 > today && july4.getDay() === 5) {
-                    dateObj = july4;
-                } else {
-                    // Otherwise calculate next Friday
-                    const daysUntilFriday = (5 - today.getDay() + 7) % 7;
-                    dateObj = new Date(today);
-                    dateObj.setDate(today.getDate() + (daysUntilFriday === 0 ? 7 : daysUntilFriday));
-                }
+                const daysUntilSaturday = (6 - today.getDay()) % 7;
+                dateObj = new Date(today);
+                dateObj.setDate(today.getDate() + (daysUntilSaturday === 0 ? 7 : daysUntilSaturday));
             }
             
             const dayOfWeek = dateObj.getDay();
@@ -793,8 +668,7 @@
         
         function updateDisplay() {
             // Update date and host
-            document.getElementById('current-date').textContent = getNextFridayNight();
-            document.getElementById('current-time').textContent = currentTime || '7:00 PM';
+            document.getElementById('current-date').textContent = getNextSaturday();
             document.getElementById('current-host').textContent = getCurrentHost();
             
             // Update RSVP list
@@ -916,14 +790,11 @@
             const comingCount = familyMembers
                 .filter(member => rsvpData[member].status === 'coming').length;
             
-            const pendingCount = familyMembers
-                .filter(member => rsvpData[member].status === 'pending').length;
-            
             const additionalGuestsCount = additionalGuests.filter(g => g.status === 'coming').length;
             
             document.getElementById('guest-summary').innerHTML = `
                 <strong>${totalGuests} guests total</strong><br>
-                ${comingCount} families confirmed${pendingCount > 0 ? ` (${pendingCount} pending)` : ''}
+                ${comingCount} families confirmed
                 ${additionalGuestsCount > 0 ? `<br>${additionalGuestsCount} additional ${additionalGuestsCount === 1 ? 'guest' : 'guests'}` : ''}
             `;
         }
@@ -1090,42 +961,6 @@
             document.getElementById('date-modal').style.display = 'none';
         }
         
-        function editTime() {
-            // Parse current time
-            const [time, ampm] = currentTime.split(' ');
-            const [hour, minute] = time.split(':');
-            
-            // Set select values
-            document.getElementById('hour-select').value = hour;
-            document.getElementById('minute-select').value = minute;
-            document.getElementById('ampm-select').value = ampm;
-            
-            document.getElementById('time-modal').style.display = 'flex';
-        }
-        
-        function saveTime() {
-            const hour = document.getElementById('hour-select').value;
-            const minute = document.getElementById('minute-select').value;
-            const ampm = document.getElementById('ampm-select').value;
-            
-            currentTime = `${hour}:${minute} ${ampm}`;
-            updateDisplay();
-            saveStateToFirebase();
-            closeTimeModal();
-        }
-        
-        function closeTimeModal() {
-            document.getElementById('time-modal').style.display = 'none';
-        }
-        
-        function toggleSection(section) {
-            const content = document.getElementById(`${section}-content`);
-            const arrow = document.getElementById(`${section}-arrow`);
-            
-            content.classList.toggle('collapsed');
-            arrow.classList.toggle('collapsed');
-        }
-        
         function showAddGuestsModal() {
             document.getElementById('guest-name-input').value = '';
             document.getElementById('guest-name-input').focus();
@@ -1218,39 +1053,43 @@
         
         async function shareSummary() {
             const host = getCurrentHost();
-            const dateStr = getNextFridayNight();
+            const date = getNextSaturday();
+            const coming = familyMembers.filter(m => rsvpData[m].status === 'coming');
+            const familyGuests = coming.reduce((sum, member) => sum + rsvpData[member].guests, 0);
+            const additionalGuestsTotal = additionalGuests
+                .filter(g => g.status === 'coming')
+                .reduce((sum, guest) => sum + (guest.guests || 1), 0);
+            const totalGuests = familyGuests + additionalGuestsTotal;
             
-            // Parse the date to get a proper Date object
-            let eventDate;
-            if (currentDate) {
-                eventDate = new Date(currentDate);
-            } else {
-                eventDate = new Date();
+            const coveredItems = bringItems
+                .filter(item => bringData[item].assigned)
+                .map(item => `${item}: ${bringData[item].person}`)
+                .join('\n');
+            
+            const neededItems = bringItems
+                .filter(item => !bringData[item].assigned)
+                .join(', ');
+            
+            const baseURL = `${window.location.origin}${window.location.pathname}`;
+            
+            let message = `🕯️ *Shlagman Shabs Plan*\n\n`;
+            message += `📅 *${date}*\n`;
+            message += `🏠 *Host:* ${host}\n`;
+            message += `👥 *${totalGuests} guests* (${coming.length} families${additionalGuestsCount > 0 ? ` + ${additionalGuestsCount} additional` : ''})\n\n`;
+            
+            if (coveredItems) {
+                message += `✅ *Bringing:*\n${coveredItems}\n\n`;
             }
             
-            // Format the date as requested
-            const formattedDate = eventDate.toLocaleDateString('en-AU', { 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric' 
-            });
+            if (neededItems) {
+                message += `❓ *Still needed:* ${neededItems}\n\n`;
+            }
             
-            // Determine if it's lunch or dinner based on the date string
-            const eventType = dateStr.includes('Lunch') ? 'Shabbat Lunch' : 'Friday Night Dinner';
-            
-            // Get the time or use TBC if not set
-            const eventTime = currentTime || 'TBC';
-            
-            const baseURL = 'https://shalgman-shabs.vercel.app';
-            
-            let message = `📅 ${eventType} - ${formattedDate}\n`;
-            message += `🏠 Host: ${host}\n`;
-            message += `🕑 Time: ${eventTime}\n\n`;
-            message += `🔗 RSVP & write what you can bring: ${baseURL}`;
+            message += `🔗 RSVP & update: ${baseURL}`;
             
             // Copy to clipboard
             navigator.clipboard.writeText(message).then(() => {
-                alert('📱 Update copied to clipboard!');
+                alert('📱 Planning summary copied!\nEveryone sees live updates on the same URL!');
             }).catch(() => {
                 alert('Summary ready:\n\n' + message);
             });
@@ -1269,14 +1108,7 @@
             // Initialize and display
             initializeBringData();
             updateDisplay();
-            
-            // Check if we need to auto-archive
-            checkAutoArchive();
-            
-            // Add initial history if needed
-            addInitialHistoryIfNeeded();
         }
-        
         
         // Start the app
         initializeApp();
@@ -1300,260 +1132,6 @@
         
         document.getElementById('guests-modal').onclick = function(e) {
             if (e.target === this) closeGuestsModal();
-        }
-        
-        document.getElementById('time-modal').onclick = function(e) {
-            if (e.target === this) closeTimeModal();
-        }
-        
-        // Archive and History Functions
-        async function archiveCurrentEvent() {
-            if (!currentDate) return;
-            
-            const eventData = {
-                date: currentDate,
-                time: currentTime,
-                host: currentHost || getCurrentHost(),
-                rsvpData: rsvpData,
-                bringData: bringData,
-                bringItems: bringItems,
-                additionalGuests: additionalGuests,
-                totalGuests: calculateTotalGuests(),
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            
-            try {
-                // Save to history collection
-                await db.collection('shabbat-history').add(eventData);
-                
-                // Reset current event
-                resetToDefaults();
-            } catch (error) {
-                console.error('Failed to archive event:', error);
-            }
-        }
-        
-        function resetToDefaults() {
-            // Reset all RSVP data to default state
-            familyMembers.forEach(member => {
-                rsvpData[member] = { status: 'pending', guests: 1, previousGuests: 1 };
-            });
-            
-            // Clear all menu items and data
-            bringItems = [];
-            bringData = {};
-            
-            // Clear additional guests
-            additionalGuests = [];
-            
-            // Reset host, date, and time
-            currentHost = '';
-            currentDate = '';
-            currentTime = '7:00 PM';
-            
-            updateDisplay();
-            saveStateToFirebase();
-        }
-        
-        function calculateTotalGuests() {
-            const familyGuests = familyMembers
-                .filter(member => rsvpData[member].status === 'coming')
-                .reduce((sum, member) => sum + rsvpData[member].guests, 0);
-            
-            const additionalGuestsTotal = additionalGuests
-                .filter(g => g.status === 'coming')
-                .reduce((sum, guest) => sum + (guest.guests || 1), 0);
-            
-            return familyGuests + additionalGuestsTotal;
-        }
-        
-        function showHistory() {
-            document.getElementById('main-view').style.display = 'none';
-            document.getElementById('history-view').style.display = 'block';
-            loadHistoryEvents();
-        }
-        
-        function showMainView() {
-            document.getElementById('history-view').style.display = 'none';
-            document.getElementById('main-view').style.display = 'block';
-        }
-        
-        async function loadHistoryEvents() {
-            try {
-                const snapshot = await db.collection('shabbat-history')
-                    .orderBy('date', 'desc')
-                    .limit(50)
-                    .get();
-                
-                const select = document.getElementById('history-select');
-                select.innerHTML = '<option value="">Select an event...</option>';
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const dateObj = new Date(data.date);
-                    const dateStr = dateObj.toLocaleDateString('en-AU', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                    });
-                    
-                    const option = document.createElement('option');
-                    option.value = doc.id;
-                    option.textContent = `${dateStr} - Host: ${data.host}`;
-                    select.appendChild(option);
-                });
-                
-                if (snapshot.empty) {
-                    const option = document.createElement('option');
-                    option.textContent = 'No history available yet';
-                    option.disabled = true;
-                    select.appendChild(option);
-                }
-            } catch (error) {
-                console.error('Failed to load history:', error);
-            }
-        }
-        
-        async function loadHistoryEvent() {
-            const eventId = document.getElementById('history-select').value;
-            if (!eventId) {
-                document.getElementById('history-content').style.display = 'none';
-                return;
-            }
-            
-            try {
-                const doc = await db.collection('shabbat-history').doc(eventId).get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    displayHistoryEvent(data);
-                }
-            } catch (error) {
-                console.error('Failed to load event:', error);
-            }
-        }
-        
-        function displayHistoryEvent(data) {
-            document.getElementById('history-content').style.display = 'block';
-            document.getElementById('history-host').textContent = data.host;
-            
-            // Display RSVPs
-            const rsvpContainer = document.getElementById('history-rsvp-list');
-            rsvpContainer.innerHTML = '';
-            
-            // Display family members who came
-            familyMembers.forEach(member => {
-                if (data.rsvpData[member] && data.rsvpData[member].status === 'coming') {
-                    const div = document.createElement('div');
-                    div.style.cssText = 'padding: 10px 0; border-bottom: 1px solid #e2e8f0;';
-                    div.innerHTML = `<strong>${member}</strong> - ${data.rsvpData[member].guests} guests`;
-                    rsvpContainer.appendChild(div);
-                }
-            });
-            
-            // Display additional guests
-            if (data.additionalGuests) {
-                data.additionalGuests.forEach(guest => {
-                    if (guest.status === 'coming') {
-                        const div = document.createElement('div');
-                        div.style.cssText = 'padding: 10px 0; border-bottom: 1px solid #e2e8f0;';
-                        div.innerHTML = `<strong>${guest.name}</strong> (guest) - ${guest.guests || 1} guests`;
-                        rsvpContainer.appendChild(div);
-                    }
-                });
-            }
-            
-            // Display guest summary
-            document.getElementById('history-guest-summary').innerHTML = `
-                <strong>${data.totalGuests || 0} guests total</strong>
-            `;
-            
-            // Display what was brought
-            const bringContainer = document.getElementById('history-bring-list');
-            bringContainer.innerHTML = '';
-            
-            if (data.bringItems && data.bringData) {
-                data.bringItems.forEach(item => {
-                    if (data.bringData[item] && data.bringData[item].assigned) {
-                        const div = document.createElement('div');
-                        div.style.cssText = 'padding: 10px 0; border-bottom: 1px solid #e2e8f0;';
-                        div.innerHTML = `<strong>${item}</strong> - ${data.bringData[item].person}`;
-                        bringContainer.appendChild(div);
-                    }
-                });
-            }
-        }
-        
-        
-        // Check if we need to archive (runs on page load)
-        function checkAutoArchive() {
-            if (!currentDate) return;
-            
-            const eventDate = new Date(currentDate);
-            const now = new Date();
-            
-            // If the event was on Friday or Saturday and it's now after the event
-            if (eventDate.getDay() === 5) { // Friday
-                const saturdayNight = new Date(eventDate);
-                saturdayNight.setDate(eventDate.getDate() + 1); // Saturday
-                saturdayNight.setHours(20, 0, 0, 0); // 8 PM Saturday
-                
-                if (now > saturdayNight) {
-                    archiveCurrentEvent();
-                }
-            } else if (eventDate.getDay() === 6) { // Saturday
-                const sundayMorning = new Date(eventDate);
-                sundayMorning.setDate(eventDate.getDate() + 1); // Sunday
-                sundayMorning.setHours(8, 0, 0, 0); // 8 AM Sunday
-                
-                if (now > sundayMorning) {
-                    archiveCurrentEvent();
-                }
-            }
-        }
-        
-        // Add initial history entry for Ruth's June 21st event
-        async function addInitialHistoryIfNeeded() {
-            try {
-                // Check if we already have history entries
-                const snapshot = await db.collection('shabbat-history')
-                    .where('date', '==', '2025-06-21')
-                    .limit(1)
-                    .get();
-                
-                if (snapshot.empty) {
-                    // Create Ruth's June 21st Shabbat lunch entry
-                    const june21Data = {
-                        date: '2025-06-21',
-                        time: '12:30 PM',
-                        host: 'Ruth',
-                        rsvpData: {
-                            'Adi & Gabe': { status: 'coming', guests: 1, previousGuests: 1 },
-                            'Bobba': { status: 'coming', guests: 1, previousGuests: 1 },
-                            'Gilla': { status: 'coming', guests: 1, previousGuests: 1 },
-                            'Maueberger': { status: 'coming', guests: 4, previousGuests: 4 },
-                            'Meyerowitz': { status: 'not-coming', guests: 0, previousGuests: 3 },
-                            'Mosbergs': { status: 'not-coming', guests: 0, previousGuests: 4 },
-                            'Moskow 29b': { status: 'coming', guests: 1, previousGuests: 1 },
-                            'Moskow Carlingford': { status: 'coming', guests: 2, previousGuests: 2 },
-                            'PBs': { status: 'coming', guests: 4, previousGuests: 4 }
-                        },
-                        bringItems: ['Strawberry Spinach Salad', 'Chickpea Salad', 'Cucumber Lettuce Salad', 'Fruit'],
-                        bringData: {
-                            'Strawberry Spinach Salad': { assigned: true, person: 'Gilla' },
-                            'Chickpea Salad': { assigned: true, person: 'Moskow 29b' },
-                            'Cucumber Lettuce Salad': { assigned: true, person: 'Moskow Carlingford' },
-                            'Fruit': { assigned: true, person: 'PBs' }
-                        },
-                        additionalGuests: [],
-                        totalGuests: 13,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    
-                    await db.collection('shabbat-history').add(june21Data);
-                }
-            } catch (error) {
-                console.error('Failed to add initial history:', error);
-            }
         }
     </script>
 </body>
