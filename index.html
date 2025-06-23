@@ -455,19 +455,23 @@
             </div>
             
             <div class="section">
-                <div class="section-header">
-                    <h3>👥 Who Came</h3>
+                <div class="section-header" onclick="toggleSection('history-rsvp')">
+                    <h3>👥 Who Came <span class="collapse-arrow" id="history-rsvp-arrow">▼</span></h3>
                 </div>
-                <div id="history-rsvp-list" style="padding: 20px;"></div>
+                <div class="section-content" id="history-rsvp-content">
+                    <div id="history-rsvp-list" style="padding: 20px;"></div>
+                </div>
             </div>
             
             <div class="total-guests" id="history-guest-summary"></div>
             
             <div class="section">
-                <div class="section-header">
-                    <h3>🍽️ Menu</h3>
+                <div class="section-header" onclick="toggleSection('history-bring')">
+                    <h3>🍽️ Menu <span class="collapse-arrow" id="history-bring-arrow">▼</span></h3>
                 </div>
-                <div id="history-bring-list" style="padding: 20px;"></div>
+                <div class="section-content" id="history-bring-content">
+                    <div id="history-bring-list" style="padding: 20px;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -591,7 +595,7 @@
         
         // Family members from the WhatsApp group (alphabetical order)
         const familyMembers = [
-            'Adi & Gabe', 'Bobba', 'Gilla', 'Maueberger',
+            'Adi & Gabe', 'Bobba', 'Gilla',
             'Meyerowitz', 'Mosbergs', 'Moskow 29b', 'Moskow Carlingford', 'PBs'
         ];
         

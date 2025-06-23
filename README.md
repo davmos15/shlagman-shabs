@@ -93,7 +93,6 @@ Pre-configured family members:
 - Adi & Gabe
 - Bobba
 - Gilla
-- Maueberger
 - Meyerowitz
 - Mosbergs
 - Moskow 29b
