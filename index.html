@@ -109,31 +109,31 @@
             </header>
         </div>
         
+        <!-- Tab Navigation -->
+        <nav class="tab-nav" id="history-tab-nav" style="display: none;">
+            <button class="tab-btn active" data-tab="history-rsvp" onclick="switchHistoryTab('history-rsvp')">
+                👥 RSVP
+            </button>
+            <button class="tab-btn" data-tab="history-menu" onclick="switchHistoryTab('history-menu')">
+                🍽️ Menu
+            </button>
+        </nav>
+
         <!-- History Content -->
         <main class="tab-content">
             <div id="history-content" class="history-content">
-                <div class="host-info">
-                    <h2>Host</h2>
-                    <div class="host-name" id="history-host"></div>
-                </div>
-                
-                <div class="section">
-                    <div class="section-header" onclick="toggleSection('history-rsvp')">
-                        <h3>👥 Who Came <span class="collapse-arrow" id="history-rsvp-arrow">▼</span></h3>
-                    </div>
-                    <div class="section-content" id="history-rsvp-content">
-                        <div id="history-rsvp-list" class="history-list"></div>
+                <!-- RSVP Tab -->
+                <div class="tab-pane active" id="history-rsvp-tab">
+                    <div class="guest-summary-card" id="history-guest-summary"></div>
+                    <div class="content-section">
+                        <div id="history-rsvp-list"></div>
                     </div>
                 </div>
-                
-                <div class="total-guests" id="history-guest-summary"></div>
-                
-                <div class="section">
-                    <div class="section-header" onclick="toggleSection('history-bring')">
-                        <h3>🍽️ Menu <span class="collapse-arrow" id="history-bring-arrow">▼</span></h3>
-                    </div>
-                    <div class="section-content" id="history-bring-content">
-                        <div id="history-bring-list" class="history-list"></div>
+
+                <!-- Menu Tab -->
+                <div class="tab-pane" id="history-menu-tab">
+                    <div class="content-section">
+                        <div id="history-menu-list"></div>
                     </div>
                 </div>
             </div>
@@ -1223,6 +1223,7 @@
             const eventId = document.getElementById('history-select').value;
             if (!eventId) {
                 document.getElementById('history-content').style.display = 'none';
+                document.getElementById('history-tab-nav').style.display = 'none';
                 return;
             }
             
@@ -1239,19 +1240,31 @@
         
         function displayHistoryEvent(data) {
             document.getElementById('history-content').style.display = 'block';
-            document.getElementById('history-host').textContent = data.host;
+            document.getElementById('history-tab-nav').style.display = 'flex';
             
-            // Display RSVPs
+            // Display guest summary
+            document.getElementById('history-guest-summary').innerHTML = `
+                <strong>${data.totalGuests || 0} guests total</strong>
+                <span class="summary-details">Event hosted by ${data.host}</span>
+            `;
+            
+            // Display RSVPs in grid format like main page
             const rsvpContainer = document.getElementById('history-rsvp-list');
             rsvpContainer.innerHTML = '';
             
             // Display family members who came
             familyMembers.forEach(member => {
                 if (data.rsvpData[member] && data.rsvpData[member].status === 'coming') {
-                    const div = document.createElement('div');
-                    div.className = 'history-item';
-                    div.innerHTML = `<strong>${member}</strong> - ${data.rsvpData[member].guests} guests`;
-                    rsvpContainer.appendChild(div);
+                    const rsvpRow = document.createElement('div');
+                    rsvpRow.className = 'rsvp-grid';
+                    
+                    rsvpRow.innerHTML = `
+                        <div class="family-member">${member}</div>
+                        <div class="guest-count-display">${data.rsvpData[member].guests}</div>
+                        <div class="rsvp-status coming">Came</div>
+                    `;
+                    
+                    rsvpContainer.appendChild(rsvpRow);
                 }
             });
             
@@ -1259,32 +1272,49 @@
             if (data.additionalGuests) {
                 data.additionalGuests.forEach(guest => {
                     if (guest.status === 'coming') {
-                        const div = document.createElement('div');
-                        div.className = 'history-item';
-                        div.innerHTML = `<strong>${guest.name}</strong> (guest) - ${guest.guests || 1} guests`;
-                        rsvpContainer.appendChild(div);
+                        const rsvpRow = document.createElement('div');
+                        rsvpRow.className = 'rsvp-grid';
+                        
+                        rsvpRow.innerHTML = `
+                            <div class="family-member guest-row">
+                                ${guest.name}
+                                <span class="guest-label">(guest)</span>
+                            </div>
+                            <div class="guest-count-display">${guest.guests || 1}</div>
+                            <div class="rsvp-status coming">Came</div>
+                        `;
+                        
+                        rsvpContainer.appendChild(rsvpRow);
                     }
                 });
             }
             
-            // Display guest summary
-            document.getElementById('history-guest-summary').innerHTML = `
-                <strong>${data.totalGuests || 0} guests total</strong>
-            `;
-            
-            // Display what was brought
-            const bringContainer = document.getElementById('history-bring-list');
-            bringContainer.innerHTML = '';
+            // Display what was brought in grid format
+            const menuContainer = document.getElementById('history-menu-list');
+            menuContainer.innerHTML = '';
             
             if (data.bringItems && data.bringData) {
                 data.bringItems.forEach(item => {
                     if (data.bringData[item] && data.bringData[item].assigned) {
-                        const div = document.createElement('div');
-                        div.className = 'history-item';
-                        div.innerHTML = `<strong>${item}</strong> - ${data.bringData[item].person}`;
-                        bringContainer.appendChild(div);
+                        const itemRow = document.createElement('div');
+                        itemRow.className = 'bring-item';
+                        
+                        itemRow.innerHTML = `
+                            <div class="item-name">${item}</div>
+                            <div class="item-status item-covered">✓ ${data.bringData[item].person}</div>
+                        `;
+                        
+                        menuContainer.appendChild(itemRow);
                     }
                 });
+            }
+            
+            if (menuContainer.children.length === 0) {
+                menuContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>No menu items recorded for this event</p>
+                    </div>
+                `;
             }
         }
         
@@ -1409,6 +1439,17 @@
             } else if (viewName === 'share') {
                 shareSummary();
             }
+        }
+        
+        // History tab switching functionality
+        function switchHistoryTab(tabName) {
+            // Remove active class from all history tabs
+            document.querySelectorAll('#history-tab-nav .tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('#history-content .tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            // Add active class to selected tab
+            document.querySelector(`#history-tab-nav [data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
         }
     </script>
 </body>

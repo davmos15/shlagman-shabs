@@ -841,6 +841,33 @@ textarea:focus {
     padding: 0;
 }
 
+/* History display elements */
+.guest-count-display {
+    background: var(--background-color);
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    padding: 4px 8px;
+    width: 55px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.rsvp-status {
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    width: 105px;
+    text-align: center;
+}
+
+.rsvp-status.coming {
+    background: var(--success-color);
+    color: white;
+}
+
 .history-list {
     padding: 20px;
 }
