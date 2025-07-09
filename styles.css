@@ -193,7 +193,7 @@ body {
     color: #234e52;
     font-size: 18px;
     display: block;
-    margin-bottom: 2px;
+    margin-bottom: 0;
 }
 
 .summary-details {
