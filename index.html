@@ -1032,11 +1032,22 @@
         
         // Archive and History Functions
         async function archiveCurrentEvent() {
-            if (!currentDate) return;
+            // Determine the event date for archiving
+            let archiveDate;
+            if (currentDate) {
+                archiveDate = currentDate;
+            } else {
+                // Calculate the last Friday if no date is set
+                const today = new Date();
+                const lastFriday = new Date(today);
+                const daysFromLastFriday = (today.getDay() + 2) % 7; // Days since last Friday
+                lastFriday.setDate(today.getDate() - daysFromLastFriday);
+                archiveDate = lastFriday.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            }
             
             const eventData = {
-                date: currentDate,
-                time: currentTime,
+                date: archiveDate,
+                time: currentTime || '7:00 PM',
                 host: currentHost || getCurrentHost(),
                 rsvpData: rsvpData,
                 bringData: bringData,
@@ -1211,9 +1222,31 @@
         
         // Check if we need to archive (runs on page load)
         function checkAutoArchive() {
-            if (!currentDate) return;
+            // Only check for archiving if there's actual data to archive
+            if (!currentDate && Object.keys(rsvpData).length === 0 && bringItems.length === 0) {
+                return; // No data to archive
+            }
             
-            const eventDate = new Date(currentDate);
+            // Get the event date - either manually set or calculated
+            let eventDate;
+            if (currentDate) {
+                eventDate = new Date(currentDate);
+            } else {
+                // If no manual date set, check if we have data from a previous event
+                // that needs archiving by checking if it's past the typical Friday
+                const today = new Date();
+                const lastFriday = new Date(today);
+                const daysFromLastFriday = (today.getDay() + 2) % 7; // Days since last Friday
+                lastFriday.setDate(today.getDate() - daysFromLastFriday);
+                
+                // If we have data but no current date, assume it's from last Friday
+                if (Object.values(rsvpData).some(r => r.status !== 'pending') || bringItems.length > 0) {
+                    eventDate = lastFriday;
+                } else {
+                    return; // No data to archive
+                }
+            }
+            
             const now = new Date();
             
             // If the event was on Friday or Saturday and it's now after the event
