@@ -9,394 +9,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-firestore-compat.min.js"></script>
     
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-        
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #4a5568, #2d3748);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        
-        .date {
-            opacity: 0.9;
-            font-size: 16px;
-        }
-        
-        .sync-status {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-        
-        .sync-online {
-            background: #48bb78;
-            color: white;
-        }
-        
-        .sync-offline {
-            background: #f56565;
-            color: white;
-        }
-        
-        .sync-saving {
-            background: #ed8936;
-            color: white;
-        }
-        
-        .host-info {
-            background: #f7fafc;
-            padding: 20px;
-            border-left: 4px solid #4299e1;
-            margin: 20px;
-            border-radius: 8px;
-        }
-        
-        .host-info h2 {
-            color: #2d3748;
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-        
-        .host-name {
-            font-size: 20px;
-            font-weight: bold;
-            color: #4299e1;
-        }
-        
-        .section {
-            margin: 20px;
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .section-content {
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            max-height: 1000px;
-        }
-        
-        .section-content.collapsed {
-            max-height: 0;
-        }
-        
-        .section-header {
-            background: #edf2f7;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
-        
-        .section-header h3 {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .collapse-arrow {
-            display: inline-block;
-            transition: transform 0.3s;
-            font-size: 0.8em;
-        }
-        
-        .collapse-arrow.collapsed {
-            transform: rotate(-90deg);
-        }
-        
-        .edit-btn {
-            background: #4299e1;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .edit-btn:hover {
-            background: #3182ce;
-        }
-        
-        .section-header h3 {
-            color: #2d3748;
-            font-size: 16px;
-        }
-        
-        .rsvp-grid {
-            display: grid;
-            grid-template-columns: 1fr auto auto;
-            gap: 10px;
-            padding: 15px 20px;
-            align-items: center;
-        }
-        
-        .family-member {
-            font-size: 16px;
-            color: #4a5568;
-        }
-        
-        .guest-count {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 8px 12px;
-            width: 60px;
-            text-align: center;
-            font-size: 14px;
-        }
-        
-        .rsvp-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-width: 80px;
-        }
-        
-        .rsvp-btn.coming {
-            background: #48bb78;
-            color: white;
-        }
-        
-        .rsvp-btn.not-coming {
-            background: #f56565;
-            color: white;
-        }
-        
-        .rsvp-btn.pending {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-        
-        .bring-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #f7fafc;
-        }
-        
-        .bring-item:last-child {
-            border-bottom: none;
-        }
-        
-        .item-name {
-            font-size: 16px;
-            color: #2d3748;
-            position: relative;
-        }
-        
-        .item-name:hover::after {
-            content: " ✏️";
-            font-size: 12px;
-            opacity: 0.6;
-        }
-        
-        .item-status {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        .item-covered {
-            background: #c6f6d5;
-            color: #22543d;
-        }
-        
-        .item-needed {
-            background: #fed7d7;
-            color: #742a2a;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .item-needed:hover {
-            background: #fc8181;
-            color: white;
-        }
-        
-        .summary-btn {
-            background: #4299e1;
-            color: white;
-            border: none;
-            padding: 15px;
-            margin: 20px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            width: calc(100% - 40px);
-            transition: background 0.2s;
-        }
-        
-        .summary-btn:hover {
-            background: #3182ce;
-        }
-        
-        .total-guests {
-            background: #e6fffa;
-            margin: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #81e6d9;
-        }
-        
-        .total-guests strong {
-            color: #234e52;
-            font-size: 18px;
-        }
-        
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 350px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .modal h3 {
-            margin-bottom: 15px;
-            color: #2d3748;
-        }
-        
-        .person-btn {
-            display: block;
-            width: 100%;
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            padding: 12px;
-            margin: 5px 0;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .person-btn:hover {
-            background: #4299e1;
-            color: white;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .modal-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        
-        .modal-btn.primary {
-            background: #4299e1;
-            color: white;
-        }
-        
-        .modal-btn.secondary {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-        
-        .edit-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            margin: 5px 0;
-        }
-        
-        .remove-btn {
-            background: #f56565;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-    </style>
+    <!-- External CSS -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Sync Status Indicator -->
-    <div id="sync-status" class="sync-status sync-offline">⚫ Connecting...</div>
-    
-
     <div class="container" id="main-view">
         <div class="header">
             <h1>🕯️ Shlagman Shabs Plan</h1>
-            <div class="date" id="current-date" onclick="editDate()" style="cursor: pointer;"></div>
-            <div class="time-section" style="margin-top: 10px; font-size: 18px; color: white; cursor: pointer;" onclick="editTime()">
-                <span style="margin-right: 5px;">🕑</span>
+            <div class="date" id="current-date" onclick="editDate()"></div>
+            <div class="time-section" onclick="editTime()">
+                <span class="time-icon">🕑</span>
                 <span id="current-time">7:00 PM</span>
             </div>
         </div>
         
         <div class="host-info">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="host-header">
                 <h2>This Week's Host</h2>
                 <button class="edit-btn" onclick="editHost()">✏️ Edit Host</button>
             </div>
@@ -420,6 +48,13 @@
                 <button class="edit-btn" onclick="event.stopPropagation(); editItems()">✏️ Edit Items</button>
             </div>
             <div class="section-content" id="bring-content">
+                <!-- Notes field at the top -->
+                <div class="menu-notes-container">
+                    <div class="menu-notes-label">Notes:</div>
+                    <textarea id="menu-notes" 
+                              placeholder="Add any notes about the menu, dietary restrictions, special requests, etc..." 
+                              oninput="updateMenuNotes(this.value)"></textarea>
+                </div>
                 <div id="bring-list"></div>
             </div>
         </div>
@@ -428,27 +63,27 @@
             📱 Share Update
         </button>
         
-        <button class="summary-btn" onclick="showHistory()" style="background: #718096; margin-top: 10px;">
+        <button class="summary-btn history-btn" onclick="showHistory()">
             📅 History
         </button>
         
     </div>
 
     <!-- History View -->
-    <div class="container" id="history-view" style="display: none;">
+    <div class="container" id="history-view" class="history-view">
         <div class="header">
             <h1>📅 Shabbat History</h1>
-            <button class="edit-btn" onclick="showMainView()" style="margin-top: 10px;">← Back to Current</button>
+            <button class="edit-btn back-btn" onclick="showMainView()">← Back to Current</button>
         </div>
         
-        <div style="margin: 20px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <label style="display: block; margin-bottom: 10px; color: #4a5568; font-weight: 600;">Select a past event:</label>
-            <select id="history-select" onchange="loadHistoryEvent()" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 16px;">
+        <div class="history-select-container">
+            <label class="history-select-label">Select a past event:</label>
+            <select id="history-select" onchange="loadHistoryEvent()">
                 <option value="">Select an event...</option>
             </select>
         </div>
         
-        <div id="history-content" style="display: none;">
+        <div id="history-content" class="history-content">
             <div class="host-info">
                 <h2>Host</h2>
                 <div class="host-name" id="history-host"></div>
@@ -459,7 +94,7 @@
                     <h3>👥 Who Came <span class="collapse-arrow" id="history-rsvp-arrow">▼</span></h3>
                 </div>
                 <div class="section-content" id="history-rsvp-content">
-                    <div id="history-rsvp-list" style="padding: 20px;"></div>
+                    <div id="history-rsvp-list" class="history-list"></div>
                 </div>
             </div>
             
@@ -470,7 +105,7 @@
                     <h3>🍽️ Menu <span class="collapse-arrow" id="history-bring-arrow">▼</span></h3>
                 </div>
                 <div class="section-content" id="history-bring-content">
-                    <div id="history-bring-list" style="padding: 20px;"></div>
+                    <div id="history-bring-list" class="history-list"></div>
                 </div>
             </div>
         </div>
@@ -493,7 +128,7 @@
             <h3>Edit Menu</h3>
             <div id="edit-list"></div>
             <input type="text" id="new-item-input" placeholder="Add new item..." 
-                   style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin: 10px 0;"
+                   class="new-item-input"
                    onkeypress="if(event.key==='Enter') addNewItem()">
             <div class="modal-buttons">
                 <button class="modal-btn primary" onclick="addNewItem()">Add Item</button>
@@ -517,8 +152,7 @@
     <div class="modal" id="date-modal">
         <div class="modal-content">
             <h3>Set Shabbat Date</h3>
-            <input type="date" id="date-input" 
-                   style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin: 10px 0;">
+            <input type="date" id="date-input" class="date-input">
             <div class="modal-buttons">
                 <button class="modal-btn primary" onclick="saveDate()">Save Date</button>
                 <button class="modal-btn secondary" onclick="closeDateModal()">Cancel</button>
@@ -528,34 +162,60 @@
 
     <!-- Time Selection Modal -->
     <div class="modal" id="time-modal">
-        <div class="modal-content">
+        <div class="modal-content time-modal-content">
             <h3>Select Time</h3>
-            <div style="display: flex; gap: 10px; margin: 15px 0;">
-                <select id="hour-select" style="flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7" selected>7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                    <option value="11">11</option>
-                    <option value="12">12</option>
-                </select>
-                <select id="minute-select" style="flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
-                    <option value="00" selected>00</option>
-                    <option value="15">15</option>
-                    <option value="30">30</option>
-                    <option value="45">45</option>
-                </select>
-                <select id="ampm-select" style="flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
-                    <option value="AM">AM</option>
-                    <option value="PM" selected>PM</option>
-                </select>
+            
+            <!-- TBC Option -->
+            <div class="tbc-option">
+                <button class="modal-btn secondary tbc-btn" onclick="setTimeTBC()">
+                    Set as TBC (To Be Confirmed)
+                </button>
             </div>
+            
+            <!-- Analog Clock -->
+            <div class="clock-container">
+                <div class="clock-face-container">
+                    <svg id="clock-face" width="200" height="200" class="clock-svg">
+                        <!-- Clock face -->
+                        <circle cx="100" cy="100" r="95" fill="white" stroke="#e2e8f0" stroke-width="2"/>
+                        
+                        <!-- Hour numbers -->
+                        <text x="100" y="25" text-anchor="middle" font-size="16" fill="#4a5568">12</text>
+                        <text x="150" y="45" text-anchor="middle" font-size="16" fill="#4a5568">1</text>
+                        <text x="180" y="80" text-anchor="middle" font-size="16" fill="#4a5568">2</text>
+                        <text x="190" y="105" text-anchor="middle" font-size="16" fill="#4a5568">3</text>
+                        <text x="180" y="130" text-anchor="middle" font-size="16" fill="#4a5568">4</text>
+                        <text x="150" y="165" text-anchor="middle" font-size="16" fill="#4a5568">5</text>
+                        <text x="100" y="185" text-anchor="middle" font-size="16" fill="#4a5568">6</text>
+                        <text x="50" y="165" text-anchor="middle" font-size="16" fill="#4a5568">7</text>
+                        <text x="20" y="130" text-anchor="middle" font-size="16" fill="#4a5568">8</text>
+                        <text x="10" y="105" text-anchor="middle" font-size="16" fill="#4a5568">9</text>
+                        <text x="20" y="80" text-anchor="middle" font-size="16" fill="#4a5568">10</text>
+                        <text x="50" y="45" text-anchor="middle" font-size="16" fill="#4a5568">11</text>
+                        
+                        <!-- Center dot -->
+                        <circle cx="100" cy="100" r="3" fill="#4a5568"/>
+                        
+                        <!-- Hour hand -->
+                        <line id="hour-hand" x1="100" y1="100" x2="100" y2="50" stroke="#2d3748" stroke-width="4" stroke-linecap="round"/>
+                        
+                        <!-- Minute hand -->
+                        <line id="minute-hand" x1="100" y1="100" x2="100" y2="30" stroke="#4299e1" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                
+                <!-- AM/PM Toggle -->
+                <div class="ampm-buttons">
+                    <button id="am-btn" class="modal-btn secondary" onclick="setAMPM('AM')">AM</button>
+                    <button id="pm-btn" class="modal-btn primary" onclick="setAMPM('PM')">PM</button>
+                </div>
+            </div>
+            
+            <!-- Time Display -->
+            <div class="time-display">
+                <span id="time-display">7:00 PM</span>
+            </div>
+            
             <div class="modal-buttons">
                 <button class="modal-btn primary" onclick="saveTime()">Save</button>
                 <button class="modal-btn secondary" onclick="closeTimeModal()">Cancel</button>
@@ -568,7 +228,7 @@
         <div class="modal-content">
             <h3>Add Additional Guests</h3>
             <input type="text" id="guest-name-input" placeholder="Guest name..." 
-                   style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin: 10px 0;"
+                   class="guest-input"
                    onkeypress="if(event.key==='Enter') addGuest()">
             <div class="modal-buttons">
                 <button class="modal-btn primary" onclick="addGuest()">Add Guest</button>
@@ -612,6 +272,7 @@
         let currentDate = '';
         let currentTime = '7:00 PM'; // Default time
         let additionalGuests = [];
+        let menuNotes = ''; // Notes for the menu section
         
         // Initialize family member RSVPs
         familyMembers.forEach(member => {
@@ -619,28 +280,7 @@
         });
         
         // Firebase Functions
-        function updateSyncStatus(status) {
-            const statusEl = document.getElementById('sync-status');
-            
-            switch(status) {
-                case 'online':
-                    statusEl.textContent = '🟢 Live';
-                    statusEl.className = 'sync-status sync-online';
-                    break;
-                case 'saving':
-                    statusEl.textContent = '🟡 Saving...';
-                    statusEl.className = 'sync-status sync-saving';
-                    break;
-                case 'offline':
-                default:
-                    statusEl.textContent = '🔴 Offline';
-                    statusEl.className = 'sync-status sync-offline';
-                    break;
-            }
-        }
-        
         async function saveStateToFirebase() {
-            updateSyncStatus('saving');
             
             try {
                 const state = {
@@ -651,14 +291,13 @@
                     currentTime,
                     bringItems,
                     additionalGuests,
+                    menuNotes,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
                 await db.collection('shabbat-plans').doc('current').set(state);
-                updateSyncStatus('online');
             } catch (error) {
                 console.error('Failed to save to Firebase:', error);
-                updateSyncStatus('offline');
             }
         }
         
@@ -676,6 +315,7 @@
                     if (data.currentTime) currentTime = data.currentTime;
                     if (data.bringItems) bringItems = data.bringItems;
                     if (data.additionalGuests) additionalGuests = data.additionalGuests;
+                    if (data.menuNotes) menuNotes = data.menuNotes;
                     
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
@@ -691,14 +331,14 @@
                     
                     initializeBringData();
                     updateDisplay();
-                    updateSyncStatus('online');
+                    // updateSyncStatus('online');
                 } else {
                     // No existing data, create initial state
                     await saveStateToFirebase();
                 }
             } catch (error) {
                 console.error('Failed to load from Firebase:', error);
-                updateSyncStatus('offline');
+                // updateSyncStatus('offline');
             }
         }
         
@@ -715,6 +355,7 @@
                     if (data.currentTime) currentTime = data.currentTime;
                     if (data.bringItems) bringItems = data.bringItems;
                     if (data.additionalGuests) additionalGuests = data.additionalGuests;
+                    if (data.menuNotes) menuNotes = data.menuNotes;
                     
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
@@ -730,11 +371,11 @@
                     
                     initializeBringData();
                     updateDisplay();
-                    updateSyncStatus('online');
+                    // updateSyncStatus('online');
                 }
             }, (error) => {
                 console.error('Real-time sync error:', error);
-                updateSyncStatus('offline');
+                // updateSyncStatus('offline');
             });
         }
         
@@ -801,10 +442,21 @@
             document.getElementById('current-time').textContent = currentTime || '7:00 PM';
             document.getElementById('current-host').textContent = getCurrentHost();
             
+            // Update menu notes
+            const notesTextarea = document.getElementById('menu-notes');
+            if (notesTextarea) {
+                notesTextarea.value = menuNotes || '';
+            }
+            
             // Update RSVP list
             updateRSVPList();
             updateGuestSummary();
             updateBringList();
+        }
+        
+        function updateMenuNotes(value) {
+            menuNotes = value;
+            saveStateToFirebase();
         }
         
         function updateRSVPList() {
@@ -842,10 +494,10 @@
                 rsvpRow.className = 'rsvp-grid';
                 
                 rsvpRow.innerHTML = `
-                    <div class="family-member" style="display: flex; align-items: center;">
+                    <div class="family-member guest-row">
                         ${guest.name}
-                        <span style="color: #718096; font-size: 12px; margin-left: 5px;">(guest)</span>
-                        <button onclick="removeAdditionalGuest(${index})" style="margin-left: auto; background: none; border: none; color: #e53e3e; cursor: pointer; font-size: 16px;">×</button>
+                        <span class="guest-label">(guest)</span>
+                        <button onclick="removeAdditionalGuest(${index})" class="remove-guest-btn">×</button>
                     </div>
                     <input type="number" 
                            class="guest-count" 
@@ -865,9 +517,9 @@
             
             // Add "Add Guests" button at the bottom
             const addGuestsBtn = document.createElement('div');
-            addGuestsBtn.style.cssText = 'padding: 15px 20px; text-align: center;';
+            addGuestsBtn.className = 'add-guests-container';
             addGuestsBtn.innerHTML = `
-                <button class="edit-btn" onclick="showAddGuestsModal()" style="width: 100%;">
+                <button class="edit-btn add-guests-btn" onclick="showAddGuestsModal()">
                     ➕ Add Guests
                 </button>
             `;
@@ -939,9 +591,9 @@
             if (bringItems.length === 0) {
                 // Show "Add Items" button when list is empty
                 bringContainer.innerHTML = `
-                    <div style="padding: 30px 20px; text-align: center;">
-                        <p style="color: #718096; margin-bottom: 15px;">No items added yet</p>
-                        <button class="edit-btn" onclick="editItems()" style="padding: 10px 20px;">
+                    <div class="empty-state">
+                        <p>No items added yet</p>
+                        <button class="edit-btn add-items-btn" onclick="editItems()">
                             ➕ Add Items
                         </button>
                     </div>
@@ -953,7 +605,7 @@
                     itemRow.className = 'bring-item';
                     
                     itemRow.innerHTML = `
-                        <div class="item-name" onclick="editItemName('${item}')" style="cursor: pointer; text-decoration: underline; text-decoration-style: dotted;">${item}</div>
+                        <div class="item-name" onclick="editItemName('${item}')">${item}</div>
                         <div class="item-status ${itemData.assigned ? 'item-covered' : 'item-needed'}"
                              onclick="claimItem('${item}')">
                             ${itemData.assigned ? `✓ ${itemData.person} (tap to change)` : 'Tap to claim'}
@@ -1094,25 +746,121 @@
             document.getElementById('date-modal').style.display = 'none';
         }
         
+        // Clock variables
+        let selectedHour = 7;
+        let selectedMinute = 0;
+        let selectedAMPM = 'PM';
+        
         function editTime() {
-            // Parse current time
-            const [time, ampm] = currentTime.split(' ');
-            const [hour, minute] = time.split(':');
+            // Parse current time if not TBC
+            if (currentTime && currentTime !== 'TBC') {
+                const [time, ampm] = currentTime.split(' ');
+                const [hour, minute] = time.split(':');
+                selectedHour = parseInt(hour);
+                selectedMinute = parseInt(minute);
+                selectedAMPM = ampm || 'PM';
+            } else {
+                // Default values
+                selectedHour = 7;
+                selectedMinute = 0;
+                selectedAMPM = 'PM';
+            }
             
-            // Set select values
-            document.getElementById('hour-select').value = hour;
-            document.getElementById('minute-select').value = minute;
-            document.getElementById('ampm-select').value = ampm;
+            updateClockDisplay();
+            updateClockHands();
+            updateAMPMButtons();
             
             document.getElementById('time-modal').style.display = 'flex';
+            
+            // Add click event to clock face
+            const clockFace = document.getElementById('clock-face');
+            clockFace.addEventListener('click', handleClockClick);
+        }
+        
+        function handleClockClick(event) {
+            const rect = event.currentTarget.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const x = event.clientX - rect.left - centerX;
+            const y = event.clientY - rect.top - centerY;
+            
+            // Calculate angle from center
+            let angle = Math.atan2(x, -y) * (180 / Math.PI);
+            if (angle < 0) angle += 360;
+            
+            // Calculate distance from center
+            const distance = Math.sqrt(x * x + y * y);
+            const maxDistance = rect.width / 2;
+            
+            if (distance < maxDistance * 0.6) {
+                // Clicked on inner area - set hour
+                selectedHour = Math.round(angle / 30) || 12;
+            } else {
+                // Clicked on outer area - set minute
+                selectedMinute = Math.round(angle / 6) % 60;
+            }
+            
+            updateClockDisplay();
+            updateClockHands();
+        }
+        
+        function updateClockHands() {
+            const hourHand = document.getElementById('hour-hand');
+            const minuteHand = document.getElementById('minute-hand');
+            
+            // Calculate angles
+            const hourAngle = (selectedHour % 12) * 30 + (selectedMinute / 60) * 30;
+            const minuteAngle = selectedMinute * 6;
+            
+            // Update hour hand
+            const hourX = 100 + 50 * Math.sin(hourAngle * Math.PI / 180);
+            const hourY = 100 - 50 * Math.cos(hourAngle * Math.PI / 180);
+            hourHand.setAttribute('x2', hourX);
+            hourHand.setAttribute('y2', hourY);
+            
+            // Update minute hand
+            const minuteX = 100 + 70 * Math.sin(minuteAngle * Math.PI / 180);
+            const minuteY = 100 - 70 * Math.cos(minuteAngle * Math.PI / 180);
+            minuteHand.setAttribute('x2', minuteX);
+            minuteHand.setAttribute('y2', minuteY);
+        }
+        
+        function updateClockDisplay() {
+            const displayHour = selectedHour === 0 ? 12 : selectedHour;
+            const displayMinute = selectedMinute.toString().padStart(2, '0');
+            document.getElementById('time-display').textContent = `${displayHour}:${displayMinute} ${selectedAMPM}`;
+        }
+        
+        function setAMPM(ampm) {
+            selectedAMPM = ampm;
+            updateAMPMButtons();
+            updateClockDisplay();
+        }
+        
+        function updateAMPMButtons() {
+            const amBtn = document.getElementById('am-btn');
+            const pmBtn = document.getElementById('pm-btn');
+            
+            if (selectedAMPM === 'AM') {
+                amBtn.className = 'modal-btn primary';
+                pmBtn.className = 'modal-btn secondary';
+            } else {
+                amBtn.className = 'modal-btn secondary';
+                pmBtn.className = 'modal-btn primary';
+            }
+        }
+        
+        function setTimeTBC() {
+            currentTime = 'TBC';
+            updateDisplay();
+            saveStateToFirebase();
+            closeTimeModal();
         }
         
         function saveTime() {
-            const hour = document.getElementById('hour-select').value;
-            const minute = document.getElementById('minute-select').value;
-            const ampm = document.getElementById('ampm-select').value;
-            
-            currentTime = `${hour}:${minute} ${ampm}`;
+            const displayHour = selectedHour === 0 ? 12 : selectedHour;
+            const displayMinute = selectedMinute.toString().padStart(2, '0');
+            currentTime = `${displayHour}:${displayMinute} ${selectedAMPM}`;
             updateDisplay();
             saveStateToFirebase();
             closeTimeModal();
@@ -1245,12 +993,31 @@
             // Get the time or use TBC if not set
             const eventTime = currentTime || 'TBC';
             
-            const baseURL = 'https://shalgman-shabs.vercel.app';
+            // Array of food emojis to randomly select from
+            const foodEmojis = ['🥗', '🍝', '🥘', '🍲', '🥙', '🌮', '🍛', '🥧', '🍰', '🧁', '🍪', '🍓', '🥖', '🧆', '🥒', '🍅'];
+            const randomFoodEmoji = foodEmojis[Math.floor(Math.random() * foodEmojis.length)];
+            
+            // Build menu items string
+            let menuItems = [];
+            bringItems.forEach(item => {
+                if (bringData[item] && bringData[item].assigned) {
+                    menuItems.push(`${item} - ${bringData[item].person}`);
+                } else {
+                    menuItems.push(item);
+                }
+            });
+            
+            const baseURL = 'https://shlagman-shabs.vercel.app';
             
             let message = `📅 ${eventType} - ${formattedDate}\n`;
             message += `🏠 Host: ${host}\n`;
-            message += `🕑 Time: ${eventTime}\n\n`;
-            message += `🔗 RSVP & write what you can bring: ${baseURL}`;
+            message += `🕑 Time: ${eventTime}\n`;
+            
+            if (menuItems.length > 0) {
+                message += `${randomFoodEmoji} Menu: ${menuItems.join(', ')}\n`;
+            }
+            
+            message += `\n🔗 RSVP: ${baseURL}`;
             
             // Copy to clipboard
             navigator.clipboard.writeText(message).then(() => {
@@ -1262,7 +1029,7 @@
         
         // Initialize the app
         async function initializeApp() {
-            updateSyncStatus('offline');
+            // updateSyncStatus('offline');
             
             // Load state from Firebase
             await loadStateFromFirebase();
@@ -1354,6 +1121,7 @@
             currentHost = '';
             currentDate = '';
             currentTime = '7:00 PM';
+            menuNotes = '';
             
             updateDisplay();
             saveStateToFirebase();
@@ -1448,7 +1216,7 @@
             familyMembers.forEach(member => {
                 if (data.rsvpData[member] && data.rsvpData[member].status === 'coming') {
                     const div = document.createElement('div');
-                    div.style.cssText = 'padding: 10px 0; border-bottom: 1px solid #e2e8f0;';
+                    div.className = 'history-item';
                     div.innerHTML = `<strong>${member}</strong> - ${data.rsvpData[member].guests} guests`;
                     rsvpContainer.appendChild(div);
                 }
@@ -1459,7 +1227,7 @@
                 data.additionalGuests.forEach(guest => {
                     if (guest.status === 'coming') {
                         const div = document.createElement('div');
-                        div.style.cssText = 'padding: 10px 0; border-bottom: 1px solid #e2e8f0;';
+                        div.className = 'history-item';
                         div.innerHTML = `<strong>${guest.name}</strong> (guest) - ${guest.guests || 1} guests`;
                         rsvpContainer.appendChild(div);
                     }
@@ -1479,7 +1247,7 @@
                 data.bringItems.forEach(item => {
                     if (data.bringData[item] && data.bringData[item].assigned) {
                         const div = document.createElement('div');
-                        div.style.cssText = 'padding: 10px 0; border-bottom: 1px solid #e2e8f0;';
+                        div.className = 'history-item';
                         div.innerHTML = `<strong>${item}</strong> - ${data.bringData[item].person}`;
                         bringContainer.appendChild(div);
                     }

@@ -1,0 +1,590 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+/* Container */
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, #4a5568, #2d3748);
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.date {
+    opacity: 0.9;
+    font-size: 16px;
+}
+
+.time-section {
+    margin-top: 10px;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+}
+
+/* Host Info */
+.host-info {
+    background: #f7fafc;
+    padding: 20px;
+    border-left: 4px solid #4299e1;
+    margin: 20px;
+    border-radius: 8px;
+}
+
+.host-info h2 {
+    color: #2d3748;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.host-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: #4299e1;
+}
+
+/* Sections */
+.section {
+    margin: 20px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.section-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    max-height: 1000px;
+}
+
+.section-content.collapsed {
+    max-height: 0;
+}
+
+.section-header {
+    background: #edf2f7;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.section-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #2d3748;
+    font-size: 16px;
+}
+
+.collapse-arrow {
+    display: inline-block;
+    transition: transform 0.3s;
+    font-size: 0.8em;
+}
+
+.collapse-arrow.collapsed {
+    transform: rotate(-90deg);
+}
+
+/* Buttons */
+.edit-btn {
+    background: #4299e1;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.edit-btn:hover {
+    background: #3182ce;
+}
+
+.summary-btn {
+    background: #4299e1;
+    color: white;
+    border: none;
+    padding: 15px;
+    margin: 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    width: calc(100% - 40px);
+    transition: background 0.2s;
+}
+
+.summary-btn:hover {
+    background: #3182ce;
+}
+
+/* RSVP Grid */
+.rsvp-grid {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    padding: 15px 20px;
+    align-items: center;
+}
+
+.family-member {
+    font-size: 16px;
+    color: #4a5568;
+}
+
+.guest-count {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    width: 60px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.rsvp-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 80px;
+}
+
+.rsvp-btn.coming {
+    background: #48bb78;
+    color: white;
+}
+
+.rsvp-btn.not-coming {
+    background: #f56565;
+    color: white;
+}
+
+.rsvp-btn.pending {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+/* Menu Items */
+.bring-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f7fafc;
+}
+
+.bring-item:last-child {
+    border-bottom: none;
+}
+
+.item-name {
+    font-size: 16px;
+    color: #2d3748;
+    position: relative;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
+
+.item-name:hover::after {
+    content: " ✏️";
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+.item-status {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.item-covered {
+    background: #c6f6d5;
+    color: #22543d;
+}
+
+.item-needed {
+    background: #fed7d7;
+    color: #742a2a;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.item-needed:hover {
+    background: #fc8181;
+    color: white;
+}
+
+/* Guest Summary */
+.total-guests {
+    background: #e6fffa;
+    margin: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #81e6d9;
+}
+
+.total-guests strong {
+    color: #234e52;
+    font-size: 18px;
+}
+
+/* Modals */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 350px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal h3 {
+    margin-bottom: 15px;
+    color: #2d3748;
+}
+
+.person-btn {
+    display: block;
+    width: 100%;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    padding: 12px;
+    margin: 5px 0;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.person-btn:hover {
+    background: #4299e1;
+    color: white;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.modal-btn.primary {
+    background: #4299e1;
+    color: white;
+}
+
+.modal-btn.secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+/* Edit Items */
+.edit-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin: 5px 0;
+}
+
+.remove-btn {
+    background: #f56565;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* Menu Notes */
+.menu-notes-container {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f7fafc;
+}
+
+.menu-notes-label {
+    font-size: 14px;
+    color: #718096;
+    margin-bottom: 8px;
+}
+
+#menu-notes {
+    width: 100%;
+    min-height: 60px;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="date"],
+input[type="number"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: inherit;
+}
+
+/* Time Modal Specific */
+.time-modal-content {
+    width: 90%;
+    max-width: 400px;
+}
+
+.tbc-option {
+    margin: 15px 0;
+}
+
+.tbc-btn {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.clock-container {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+.clock-face-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+}
+
+.clock-svg {
+    cursor: pointer;
+}
+
+.ampm-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ampm-buttons button {
+    padding: 15px 20px;
+}
+
+.time-display {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #2d3748;
+}
+
+.time-icon {
+    margin-right: 5px;
+}
+
+.date {
+    cursor: pointer;
+}
+
+.host-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-btn {
+    background: #718096;
+    margin-top: 10px;
+}
+
+.back-btn {
+    margin-top: 10px;
+}
+
+.history-content {
+    display: none;
+}
+
+.history-list {
+    padding: 20px;
+}
+
+.guest-input,
+.new-item-input,
+.date-input {
+    margin: 10px 0;
+}
+
+/* History View */
+.history-view {
+    display: none;
+}
+
+/* Guest Management */
+.guest-row {
+    display: flex;
+    align-items: center;
+}
+
+.guest-label {
+    color: #718096;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+.remove-guest-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: #e53e3e;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.add-guests-container {
+    padding: 15px 20px;
+    text-align: center;
+}
+
+.add-guests-btn {
+    width: 100%;
+}
+
+.add-items-btn {
+    padding: 10px 20px;
+}
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.mb-15 {
+    margin-bottom: 15px;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.empty-state {
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.empty-state p {
+    color: #718096;
+    margin-bottom: 15px;
+}
+
+/* History Page Styles */
+.history-select-container {
+    margin: 20px;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.history-select-label {
+    display: block;
+    margin-bottom: 10px;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+#history-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.history-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.history-item strong {
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .container {
+        max-width: 100%;
+        border-radius: 0;
+    }
+    
+    .modal-content {
+        max-width: 95%;
+    }
+}

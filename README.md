@@ -54,7 +54,7 @@ A real-time web application for coordinating weekly Shabbat gatherings among fam
 ## 📁 Project Structure
 
 ```
-shalgman-shabs/
+shlagman-shabs/
 ├── index.html          # Main application
 ├── index.backup.html   # Backup of previous version
 ├── middleware.js       # Vercel security middleware
