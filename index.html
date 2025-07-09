@@ -92,45 +92,68 @@
     </div>
 
     <!-- History View -->
-    <div class="container history-view" id="history-view">
-        <div class="header">
-            <h1>📅 Shabbat History</h1>
-            <button class="edit-btn back-btn" onclick="showMainView()">← Back to Current</button>
+    <div class="app-container history-view" id="history-view">
+        <!-- Fixed Header Container -->
+        <div class="header-container">
+            <!-- Header -->
+            <header class="app-header">
+                <h1 class="app-title">📅 Shabbat History</h1>
+                <div class="event-info-card">
+                    <div class="history-select-container">
+                        <label class="history-select-label">Select a past event:</label>
+                        <select id="history-select" onchange="loadHistoryEvent()">
+                            <option value="">Select an event...</option>
+                        </select>
+                    </div>
+                </div>
+            </header>
         </div>
         
-        <div class="history-select-container">
-            <label class="history-select-label">Select a past event:</label>
-            <select id="history-select" onchange="loadHistoryEvent()">
-                <option value="">Select an event...</option>
-            </select>
-        </div>
-        
-        <div id="history-content" class="history-content">
-            <div class="host-info">
-                <h2>Host</h2>
-                <div class="host-name" id="history-host"></div>
-            </div>
-            
-            <div class="section">
-                <div class="section-header" onclick="toggleSection('history-rsvp')">
-                    <h3>👥 Who Came <span class="collapse-arrow" id="history-rsvp-arrow">▼</span></h3>
+        <!-- History Content -->
+        <main class="tab-content">
+            <div id="history-content" class="history-content">
+                <div class="host-info">
+                    <h2>Host</h2>
+                    <div class="host-name" id="history-host"></div>
                 </div>
-                <div class="section-content" id="history-rsvp-content">
-                    <div id="history-rsvp-list" class="history-list"></div>
+                
+                <div class="section">
+                    <div class="section-header" onclick="toggleSection('history-rsvp')">
+                        <h3>👥 Who Came <span class="collapse-arrow" id="history-rsvp-arrow">▼</span></h3>
+                    </div>
+                    <div class="section-content" id="history-rsvp-content">
+                        <div id="history-rsvp-list" class="history-list"></div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="total-guests" id="history-guest-summary"></div>
-            
-            <div class="section">
-                <div class="section-header" onclick="toggleSection('history-bring')">
-                    <h3>🍽️ Menu <span class="collapse-arrow" id="history-bring-arrow">▼</span></h3>
-                </div>
-                <div class="section-content" id="history-bring-content">
-                    <div id="history-bring-list" class="history-list"></div>
+                
+                <div class="total-guests" id="history-guest-summary"></div>
+                
+                <div class="section">
+                    <div class="section-header" onclick="toggleSection('history-bring')">
+                        <h3>🍽️ Menu <span class="collapse-arrow" id="history-bring-arrow">▼</span></h3>
+                    </div>
+                    <div class="section-content" id="history-bring-content">
+                        <div id="history-bring-list" class="history-list"></div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-btn" data-nav="plan" onclick="switchView('plan')">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Plan</span>
+            </button>
+            <button class="nav-btn active" data-nav="history" onclick="switchView('history')">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">History</span>
+            </button>
+            <button class="nav-btn" data-nav="share" onclick="switchView('share')">
+                <span class="nav-icon">📱</span>
+                <span class="nav-label">Share</span>
+            </button>
+        </nav>
     </div>
 
     <!-- Selection Modal -->
@@ -1373,11 +1396,11 @@
         
         // Bottom navigation functionality
         function switchView(viewName) {
-            // Remove active class from all nav buttons
+            // Remove active class from all nav buttons in both views
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             
-            // Add active class to selected nav button
-            document.querySelector(`[data-nav="${viewName}"]`).classList.add('active');
+            // Add active class to selected nav buttons in both views
+            document.querySelectorAll(`[data-nav="${viewName}"]`).forEach(btn => btn.classList.add('active'));
             
             if (viewName === 'plan') {
                 showMainView();
