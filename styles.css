@@ -93,7 +93,7 @@ body {
 
 .event-details {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     gap: 16px;
     margin-top: 12px;
@@ -112,10 +112,6 @@ body {
 .event-host:hover,
 .event-time:hover {
     opacity: 0.8;
-}
-
-.host-label {
-    font-weight: 500;
 }
 
 .host-name {
