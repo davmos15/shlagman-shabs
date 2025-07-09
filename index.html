@@ -136,6 +136,17 @@
                         <div id="history-menu-list"></div>
                     </div>
                 </div>
+
+                <!-- Favourites Tab -->
+                <div class="tab-pane" id="favourites-tab">
+                    <div class="guest-summary-card">
+                        <strong>🌟 Family Favourites</strong>
+                        <span class="summary-details">Most loved dishes from our Shabbat gatherings</span>
+                    </div>
+                    <div class="content-section">
+                        <div id="favourites-list"></div>
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -282,6 +293,31 @@
         </div>
     </div>
 
+    <!-- Name Input Modal for Favourites -->
+    <div class="modal" id="name-input-modal">
+        <div class="modal-content">
+            <h3>Enter your name to favourite this item</h3>
+            <input type="text" id="name-input" placeholder="Your name..." 
+                   class="guest-input"
+                   onkeypress="if(event.key==='Enter') addFavourite()">
+            <div class="modal-buttons">
+                <button class="modal-btn primary" onclick="addFavourite()">Add Favourite</button>
+                <button class="modal-btn secondary" onclick="closeNameInputModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Who Favourited Modal -->
+    <div class="modal" id="who-favourited-modal">
+        <div class="modal-content">
+            <h3 id="who-favourited-title">Who favourited this item</h3>
+            <div id="who-favourited-list"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeWhoFavouritedModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -330,6 +366,7 @@
         let currentTime = '7:00 PM'; // Default time
         let additionalGuests = [];
         let menuNotes = ''; // Notes for the menu section
+        let favouritesData = {}; // Family favourites data
         
         // Initialize family member RSVPs
         familyMembers.forEach(member => {
@@ -356,6 +393,25 @@
                 await db.collection('shabbat-plans').doc('current').set(state);
             } catch (error) {
                 console.error('Failed to save to Firebase:', error);
+            }
+        }
+
+        async function saveFavouritesToFirebase() {
+            try {
+                await db.collection('favourites').doc('all').set(favouritesData);
+            } catch (error) {
+                console.error('Failed to save favourites to Firebase:', error);
+            }
+        }
+
+        async function loadFavouritesFromFirebase() {
+            try {
+                const doc = await db.collection('favourites').doc('all').get();
+                if (doc.exists) {
+                    favouritesData = doc.data() || {};
+                }
+            } catch (error) {
+                console.error('Failed to load favourites from Firebase:', error);
             }
         }
         
@@ -1048,6 +1104,9 @@
             // Load state from Firebase
             await loadStateFromFirebase();
             
+            // Load favourites from Firebase
+            await loadFavouritesFromFirebase();
+            
             // Set up real-time sync
             setupRealtimeSync();
             
@@ -1089,6 +1148,14 @@
         
         document.getElementById('time-modal').onclick = function(e) {
             if (e.target === this) closeTimeModal();
+        }
+
+        document.getElementById('name-input-modal').onclick = function(e) {
+            if (e.target === this) closeNameInputModal();
+        }
+
+        document.getElementById('who-favourited-modal').onclick = function(e) {
+            if (e.target === this) closeWhoFavouritedModal();
         }
         
         // Archive and History Functions
@@ -1186,6 +1253,12 @@
                 const select = document.getElementById('history-select');
                 select.innerHTML = '<option value="">Select an event...</option>';
                 
+                // Add Family Favourites option first
+                const favouritesOption = document.createElement('option');
+                favouritesOption.value = 'family-favourites';
+                favouritesOption.textContent = '⭐ Family Favourites';
+                select.appendChild(favouritesOption);
+                
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     const dateObj = new Date(data.date);
@@ -1217,6 +1290,11 @@
             if (!eventId) {
                 document.getElementById('history-content').style.display = 'none';
                 document.getElementById('history-tab-nav').classList.remove('visible');
+                return;
+            }
+            
+            if (eventId === 'family-favourites') {
+                await displayFavouritesView();
                 return;
             }
             
@@ -1292,9 +1370,15 @@
                         const itemRow = document.createElement('div');
                         itemRow.className = 'bring-item';
                         
+                        const favouriteCount = favouritesData[item] ? favouritesData[item].length : 0;
+                        const favouriteButtonText = favouriteCount > 0 ? `⭐ Favourited (${favouriteCount})` : '⭐ Favourite';
+                        
                         itemRow.innerHTML = `
                             <div class="item-name">${item}</div>
                             <div class="item-status item-covered">✓ ${data.bringData[item].person}</div>
+                            <button class="favourite-btn" onclick="showNameInputModal('${item}', '${data.date}')">
+                                ${favouriteButtonText}
+                            </button>
                         `;
                         
                         menuContainer.appendChild(itemRow);
@@ -1443,6 +1527,125 @@
             // Add active class to selected tab
             document.querySelector(`#history-tab-nav [data-tab="${tabName}"]`).classList.add('active');
             document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+        
+        // Favourites functionality
+        let currentFavouriteItem = '';
+        let currentFavouriteDate = '';
+        
+        async function displayFavouritesView() {
+            document.getElementById('history-content').style.display = 'block';
+            document.getElementById('history-tab-nav').classList.remove('visible');
+            
+            // Hide all tabs and show favourites tab
+            document.querySelectorAll('#history-content .tab-pane').forEach(pane => pane.classList.remove('active'));
+            document.getElementById('favourites-tab').classList.add('active');
+            
+            await loadFavouritesFromFirebase();
+            displayFavouritesList();
+        }
+        
+        function displayFavouritesList() {
+            const favouritesContainer = document.getElementById('favourites-list');
+            favouritesContainer.innerHTML = '';
+            
+            // Sort items by popularity (most favourites first)
+            const sortedItems = Object.entries(favouritesData)
+                .sort(([,a], [,b]) => b.length - a.length);
+            
+            if (sortedItems.length === 0) {
+                favouritesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>No favourites yet! Add some by visiting past events and clicking the ⭐ Favourite button on menu items.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            sortedItems.forEach(([item, favourites]) => {
+                const itemRow = document.createElement('div');
+                itemRow.className = 'bring-item';
+                
+                // Get the most recent event for this item
+                const sourceEvent = favourites[favourites.length - 1].event;
+                
+                itemRow.innerHTML = `
+                    <div class="item-name">${item}</div>
+                    <div class="item-status item-covered">From: ${sourceEvent}</div>
+                    <button class="favourite-count-btn" onclick="showWhoFavouritedModal('${item}')">
+                        ${favourites.length} ${favourites.length === 1 ? 'favourite' : 'favourites'}
+                    </button>
+                    <button class="favourite-btn" onclick="showNameInputModal('${item}', '${sourceEvent}')">
+                        ⭐ Favourite
+                    </button>
+                `;
+                
+                favouritesContainer.appendChild(itemRow);
+            });
+        }
+        
+        function showNameInputModal(item, eventDate) {
+            currentFavouriteItem = item;
+            currentFavouriteDate = eventDate;
+            document.getElementById('name-input').value = '';
+            document.getElementById('name-input').focus();
+            document.getElementById('name-input-modal').style.display = 'flex';
+        }
+        
+        function closeNameInputModal() {
+            document.getElementById('name-input-modal').style.display = 'none';
+        }
+        
+        async function addFavourite() {
+            const name = document.getElementById('name-input').value.trim();
+            if (!name) return;
+            
+            if (!favouritesData[currentFavouriteItem]) {
+                favouritesData[currentFavouriteItem] = [];
+            }
+            
+            // Add the favourite
+            favouritesData[currentFavouriteItem].push({
+                name: name,
+                event: currentFavouriteDate,
+                date: new Date().toISOString().split('T')[0]
+            });
+            
+            await saveFavouritesToFirebase();
+            closeNameInputModal();
+            
+            // Refresh the current view
+            const currentSelection = document.getElementById('history-select').value;
+            if (currentSelection === 'family-favourites') {
+                displayFavouritesList();
+            } else {
+                // Refresh the history event to update button text
+                loadHistoryEvent();
+            }
+        }
+        
+        function showWhoFavouritedModal(item) {
+            document.getElementById('who-favourited-title').textContent = `Who favourited "${item}"`;
+            
+            const listContainer = document.getElementById('who-favourited-list');
+            listContainer.innerHTML = '';
+            
+            if (!favouritesData[item] || favouritesData[item].length === 0) {
+                listContainer.innerHTML = '<p>No one has favourited this item yet.</p>';
+            } else {
+                favouritesData[item].forEach(favourite => {
+                    const div = document.createElement('div');
+                    div.className = 'history-item';
+                    div.innerHTML = `<strong>${favourite.name}</strong> - ${favourite.date}`;
+                    listContainer.appendChild(div);
+                });
+            }
+            
+            document.getElementById('who-favourited-modal').style.display = 'flex';
+        }
+        
+        function closeWhoFavouritedModal() {
+            document.getElementById('who-favourited-modal').style.display = 'none';
         }
     </script>
 </body>
