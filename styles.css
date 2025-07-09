@@ -51,15 +51,16 @@ body {
     position: fixed;
     left: 0;
     right: 0;
-    z-index: 20;
 }
 
 .app-container > .app-header {
     top: 0;
+    z-index: 30;
 }
 
 .app-container > .tab-nav {
     top: 140px; /* Approximate header height */
+    z-index: 20;
 }
 
 /* Header */
