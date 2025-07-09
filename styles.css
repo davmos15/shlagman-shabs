@@ -165,7 +165,7 @@ body {
 .tab-content::before {
     content: '';
     display: block;
-    height: 200px; /* Approximate space for fixed header container */
+    height: 230px; /* Increased space for fixed header container to prevent content overlap */
 }
 
 .tab-pane {
