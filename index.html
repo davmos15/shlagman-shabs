@@ -260,10 +260,6 @@
                 </div>
             </div>
             
-            <!-- Time Display -->
-            <div class="time-display">
-                <span id="time-display">7:00 PM</span>
-            </div>
             
             <div class="modal-buttons">
                 <button class="modal-btn primary" onclick="saveTime()">Save</button>
@@ -845,10 +841,7 @@
         }
         
         function updateTimeDisplay() {
-            const hour = document.getElementById('hour-select').value;
-            const minute = document.getElementById('minute-select').value;
-            
-            document.getElementById('time-display').textContent = `${hour}:${minute} ${selectedAMPM}`;
+            // Time display removed - function kept for compatibility
         }
         
         function setAMPM(ampm) {

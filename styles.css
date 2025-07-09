@@ -679,7 +679,6 @@ body {
     flex-direction: column;
     gap: 20px;
     align-items: center;
-    margin: 20px 0;
 }
 
 .time-inputs {
@@ -744,13 +743,6 @@ body {
     transition: all 0.2s;
 }
 
-.time-display {
-    text-align: center;
-    margin: 20px 0;
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
 
 /* Edit Items */
 .edit-item {
