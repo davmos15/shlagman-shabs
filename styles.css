@@ -192,8 +192,8 @@ body {
 .guest-summary-card strong {
     color: #234e52;
     font-size: 18px;
-    display: inline;
-    margin-right: 8px;
+    display: block;
+    margin-bottom: 2px;
 }
 
 .summary-details {
