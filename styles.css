@@ -192,8 +192,13 @@ body {
 .guest-summary-card strong {
     color: #234e52;
     font-size: 18px;
-    display: block;
-    margin-bottom: 2px;
+    display: inline;
+    margin-right: 8px;
+}
+
+.summary-details {
+    color: #234e52;
+    font-size: 14px;
 }
 
 /* Content Sections */
@@ -205,12 +210,12 @@ body {
 .rsvp-grid {
     display: grid;
     grid-template-columns: 1fr auto auto;
-    gap: 12px;
-    padding: 12px;
+    gap: 10px;
+    padding: 10px;
     align-items: center;
     background: var(--card-bg);
     border-radius: var(--border-radius);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     box-shadow: var(--shadow);
 }
 
@@ -251,9 +256,9 @@ body {
 .guest-count {
     background: var(--background-color);
     border: 2px solid var(--border-color);
-    border-radius: 8px;
-    padding: 8px 12px;
-    width: 64px;
+    border-radius: 6px;
+    padding: 6px 10px;
+    width: 60px;
     text-align: center;
     font-size: 14px;
     font-weight: 500;
@@ -266,14 +271,14 @@ body {
 }
 
 .rsvp-btn {
-    padding: 8px 16px;
+    padding: 6px 14px;
     border: none;
-    border-radius: 20px;
+    border-radius: 16px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    min-width: 80px;
+    min-width: 75px;
 }
 
 .rsvp-btn.coming {

@@ -605,9 +605,8 @@
             const additionalGuestsCount = additionalGuests.filter(g => g.status === 'coming').length;
             
             document.getElementById('guest-summary').innerHTML = `
-                <strong>${totalGuests} guests total</strong><br>
-                ${comingCount} families confirmed${pendingCount > 0 ? ` (${pendingCount} pending)` : ''}
-                ${additionalGuestsCount > 0 ? `<br>${additionalGuestsCount} additional ${additionalGuestsCount === 1 ? 'guest' : 'guests'}` : ''}
+                <strong>${totalGuests} guests total</strong>
+                <span class="summary-details">${comingCount} families confirmed${pendingCount > 0 ? ` (${pendingCount} pending)` : ''}${additionalGuestsCount > 0 ? ` • ${additionalGuestsCount} additional ${additionalGuestsCount === 1 ? 'guest' : 'guests'}` : ''}</span>
             `;
         }
         
