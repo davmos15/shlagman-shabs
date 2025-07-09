@@ -46,21 +46,12 @@ body {
 }
 
 /* Header Container (Header + Tab Nav) */
-.app-container > .app-header,
-.app-container > .tab-nav {
+.header-container {
     position: fixed;
+    top: 0;
     left: 0;
     right: 0;
-}
-
-.app-container > .app-header {
-    top: 0;
     z-index: 30;
-}
-
-.app-container > .tab-nav {
-    top: 140px; /* Approximate header height */
-    z-index: 20;
 }
 
 /* Header */
@@ -167,7 +158,14 @@ body {
     flex: 1;
     overflow-y: auto;
     padding-bottom: 80px; /* Space for bottom nav */
-    margin-top: 195px; /* Header height + tab nav height - fixed positioning */
+    padding-top: 20px;
+}
+
+/* Spacer to push content below fixed header */
+.tab-content::before {
+    content: '';
+    display: block;
+    height: 200px; /* Approximate space for fixed header container */
 }
 
 .tab-pane {

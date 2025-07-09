@@ -14,34 +14,37 @@
 </head>
 <body>
     <div class="app-container" id="main-view">
-        <!-- Header -->
-        <header class="app-header">
-            <h1 class="app-title">🕯️ Shlagman Shabs Plan</h1>
-            <div class="event-info-card">
-                <div class="event-date" id="current-date" onclick="editDate()"></div>
-                <div class="event-details">
-                    <div class="event-host" onclick="editHost()">
-                        <span class="host-icon">🏠</span>
-                        <span class="host-label">Host:</span>
-                        <span class="host-name" id="current-host"></span>
-                    </div>
-                    <div class="event-time" onclick="editTime()">
-                        <span class="time-icon">🕑</span>
-                        <span id="current-time">7:00 PM</span>
+        <!-- Fixed Header Container -->
+        <div class="header-container">
+            <!-- Header -->
+            <header class="app-header">
+                <h1 class="app-title">🕯️ Shlagman Shabs Plan</h1>
+                <div class="event-info-card">
+                    <div class="event-date" id="current-date" onclick="editDate()"></div>
+                    <div class="event-details">
+                        <div class="event-host" onclick="editHost()">
+                            <span class="host-icon">🏠</span>
+                            <span class="host-label">Host:</span>
+                            <span class="host-name" id="current-host"></span>
+                        </div>
+                        <div class="event-time" onclick="editTime()">
+                            <span class="time-icon">🕑</span>
+                            <span id="current-time">7:00 PM</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </header>
+            </header>
 
-        <!-- Tab Navigation -->
-        <nav class="tab-nav">
-            <button class="tab-btn active" data-tab="rsvp" onclick="switchTab('rsvp')">
-                👥 RSVP
-            </button>
-            <button class="tab-btn" data-tab="menu" onclick="switchTab('menu')">
-                🍽️ Menu
-            </button>
-        </nav>
+            <!-- Tab Navigation -->
+            <nav class="tab-nav">
+                <button class="tab-btn active" data-tab="rsvp" onclick="switchTab('rsvp')">
+                    👥 RSVP
+                </button>
+                <button class="tab-btn" data-tab="menu" onclick="switchTab('menu')">
+                    🍽️ Menu
+                </button>
+            </nav>
+        </div>
 
         <!-- Tab Content -->
         <main class="tab-content">
