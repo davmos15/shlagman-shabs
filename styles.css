@@ -212,13 +212,13 @@ body {
 /* RSVP Grid */
 .rsvp-grid {
     display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 10px;
-    padding: 10px;
+    grid-template-columns: minmax(0, 1fr) 55px 90px;
+    gap: 8px;
+    padding: 8px;
     align-items: center;
     background: var(--card-bg);
     border-radius: var(--border-radius);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     box-shadow: var(--shadow);
 }
 
@@ -260,12 +260,19 @@ body {
     background: var(--background-color);
     border: 2px solid var(--border-color);
     border-radius: 6px;
-    padding: 6px 10px;
-    width: 60px;
+    padding: 4px 8px;
+    width: 55px;
     text-align: center;
     font-size: 14px;
     font-weight: 500;
     transition: border-color 0.2s;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 4px center;
+    background-repeat: no-repeat;
+    background-size: 12px;
+    padding-right: 24px;
 }
 
 .guest-count:focus {
@@ -274,14 +281,15 @@ body {
 }
 
 .rsvp-btn {
-    padding: 6px 14px;
+    padding: 5px 12px;
     border: none;
-    border-radius: 16px;
-    font-size: 14px;
+    border-radius: 14px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    min-width: 75px;
+    width: 90px;
+    text-align: center;
 }
 
 .rsvp-btn.coming {

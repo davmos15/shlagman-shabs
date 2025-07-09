@@ -283,8 +283,20 @@
         // Family members from the WhatsApp group (alphabetical order)
         const familyMembers = [
             'Adi & Gabe', 'Bobba', 'Gilla',
-            'Meyerowitz', 'Mosbergs', 'Moskow 29b', 'Moskow Carlingford', 'PBs'
+            'Meyerowitz', 'Mosbergs', 'Moskow 29b', 'Moskow 5/66', 'PBs'
         ];
+        
+        // Default guest counts for each family
+        const defaultGuestCounts = {
+            'Adi & Gabe': 2,
+            'Bobba': 1,
+            'Gilla': 1,
+            'Meyerowitz': 6,
+            'Mosbergs': 2,
+            'Moskow 29b': 3,
+            'Moskow 5/66': 2,
+            'PBs': 4
+        };
         
         // Host rotation (every 2 weeks)
         const hostRotation = ['Gilla', 'Ruth', 'Tamar'];
@@ -303,7 +315,8 @@
         
         // Initialize family member RSVPs
         familyMembers.forEach(member => {
-            rsvpData[member] = { status: 'pending', guests: 1, previousGuests: 1 };
+            const defaultCount = defaultGuestCounts[member] || 1;
+            rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount };
         });
         
         // Firebase Functions
@@ -346,12 +359,13 @@
                     
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
+                        const defaultCount = defaultGuestCounts[member] || 1;
                         if (!rsvpData[member]) {
-                            rsvpData[member] = { status: 'pending', guests: 1, previousGuests: 1 };
+                            rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount };
                         } else {
                             // Ensure previousGuests exists for existing data
                             if (rsvpData[member].previousGuests === undefined) {
-                                rsvpData[member].previousGuests = rsvpData[member].guests || 1;
+                                rsvpData[member].previousGuests = rsvpData[member].guests || defaultCount;
                             }
                         }
                     });
@@ -386,12 +400,13 @@
                     
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
+                        const defaultCount = defaultGuestCounts[member] || 1;
                         if (!rsvpData[member]) {
-                            rsvpData[member] = { status: 'pending', guests: 1, previousGuests: 1 };
+                            rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount };
                         } else {
                             // Ensure previousGuests exists for existing data
                             if (rsvpData[member].previousGuests === undefined) {
-                                rsvpData[member].previousGuests = rsvpData[member].guests || 1;
+                                rsvpData[member].previousGuests = rsvpData[member].guests || defaultCount;
                             }
                         }
                     });
@@ -496,15 +511,19 @@
                 const rsvpRow = document.createElement('div');
                 rsvpRow.className = 'rsvp-grid';
                 
+                // Create dropdown options
+                let dropdownOptions = '';
+                for (let i = 0; i <= 9; i++) {
+                    dropdownOptions += `<option value="${i}" ${memberData.guests === i ? 'selected' : ''}>${i}</option>`;
+                }
+                
                 rsvpRow.innerHTML = `
                     <div class="family-member">${member}</div>
-                    <input type="number" 
-                           class="guest-count" 
-                           value="${memberData.guests}" 
-                           min="1" 
-                           max="10"
-                           onchange="updateGuestCount('${member}', this.value)"
-                           ${memberData.status !== 'coming' ? 'disabled' : ''}>
+                    <select class="guest-count" 
+                            onchange="updateGuestCount('${member}', this.value)"
+                            ${memberData.status === 'not-coming' ? 'disabled' : ''}>
+                        ${dropdownOptions}
+                    </select>
                     <button class="rsvp-btn ${memberData.status}" 
                             onclick="toggleRSVP('${member}')">
                         ${memberData.status === 'coming' ? 'Coming' : 
@@ -520,19 +539,23 @@
                 const rsvpRow = document.createElement('div');
                 rsvpRow.className = 'rsvp-grid';
                 
+                // Create dropdown options for guest
+                let guestDropdownOptions = '';
+                for (let i = 0; i <= 9; i++) {
+                    guestDropdownOptions += `<option value="${i}" ${(guest.guests || 1) === i ? 'selected' : ''}>${i}</option>`;
+                }
+                
                 rsvpRow.innerHTML = `
                     <div class="family-member guest-row">
                         ${guest.name}
                         <span class="guest-label">(guest)</span>
                         <button onclick="removeAdditionalGuest(${index})" class="remove-guest-btn">×</button>
                     </div>
-                    <input type="number" 
-                           class="guest-count" 
-                           value="${guest.guests || 1}" 
-                           min="1" 
-                           max="10"
-                           onchange="updateAdditionalGuestCount(${index}, this.value)"
-                           ${guest.status !== 'coming' ? 'disabled' : ''}>
+                    <select class="guest-count" 
+                            onchange="updateAdditionalGuestCount(${index}, this.value)"
+                            ${guest.status !== 'coming' ? 'disabled' : ''}>
+                        ${guestDropdownOptions}
+                    </select>
                     <button class="rsvp-btn ${guest.status}" 
                             onclick="toggleAdditionalGuestStatus(${index})">
                         ${guest.status === 'coming' ? 'Coming' : 'Not Coming'}
@@ -555,11 +578,12 @@
         
         function toggleRSVP(member) {
             const current = rsvpData[member].status;
+            const defaultCount = defaultGuestCounts[member] || 1;
             
             if (current === 'pending') {
                 rsvpData[member].status = 'coming';
                 // Restore previous guest count when switching to coming
-                rsvpData[member].guests = rsvpData[member].previousGuests || 1;
+                rsvpData[member].guests = rsvpData[member].previousGuests || defaultCount;
             } else if (current === 'coming') {
                 // Store current guest count before switching to not-coming
                 rsvpData[member].previousGuests = rsvpData[member].guests;
@@ -567,7 +591,7 @@
                 rsvpData[member].guests = 0;
             } else {
                 rsvpData[member].status = 'pending';
-                rsvpData[member].guests = 0;
+                rsvpData[member].guests = rsvpData[member].previousGuests || defaultCount;
             }
             
             updateDisplay();
@@ -1093,7 +1117,8 @@
         function resetToDefaults() {
             // Reset all RSVP data to default state
             familyMembers.forEach(member => {
-                rsvpData[member] = { status: 'pending', guests: 1, previousGuests: 1 };
+                const defaultCount = defaultGuestCounts[member] || 1;
+                rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount };
             });
             
             // Clear all menu items and data
