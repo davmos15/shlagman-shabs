@@ -70,7 +70,7 @@
     </div>
 
     <!-- History View -->
-    <div class="container" id="history-view" class="history-view">
+    <div class="container history-view" id="history-view">
         <div class="header">
             <h1>📅 Shabbat History</h1>
             <button class="edit-btn back-btn" onclick="showMainView()">← Back to Current</button>
@@ -612,7 +612,7 @@
                         <div class="item-name" onclick="editItemName('${item}')">${item}</div>
                         <div class="item-status ${itemData.assigned ? 'item-covered' : 'item-needed'}"
                              onclick="claimItem('${item}')">
-                            ${itemData.assigned ? `✓ ${itemData.person} (tap to change)` : 'Tap to claim'}
+                            ${itemData.assigned ? `✓ ${itemData.person}` : 'Tap to claim'}
                         </div>
                     `;
                     
