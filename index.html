@@ -13,60 +13,80 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container" id="main-view">
-        <div class="header">
-            <h1>🕯️ Shlagman Shabs Plan</h1>
-            <div class="date" id="current-date" onclick="editDate()"></div>
-            <div class="time-section" onclick="editTime()">
-                <span class="time-icon">🕑</span>
-                <span id="current-time">7:00 PM</span>
+    <div class="app-container" id="main-view">
+        <!-- Header -->
+        <header class="app-header">
+            <h1 class="app-title">🕯️ Shlagman Shabs Plan</h1>
+            <div class="event-info-card">
+                <div class="event-date" id="current-date" onclick="editDate()"></div>
+                <div class="event-details">
+                    <div class="event-host" onclick="editHost()">
+                        <span class="host-icon">🏠</span>
+                        <span class="host-label">Host:</span>
+                        <span class="host-name" id="current-host"></span>
+                    </div>
+                    <div class="event-time" onclick="editTime()">
+                        <span class="time-icon">🕑</span>
+                        <span id="current-time">7:00 PM</span>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="host-info">
-            <div class="host-header">
-                <h2>This Week's Host</h2>
-                <button class="edit-btn" onclick="editHost()">✏️ Edit Host</button>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="rsvp" onclick="switchTab('rsvp')">
+                👥 RSVP
+            </button>
+            <button class="tab-btn" data-tab="menu" onclick="switchTab('menu')">
+                🍽️ Menu
+            </button>
+        </nav>
+
+        <!-- Tab Content -->
+        <main class="tab-content">
+            <!-- RSVP Tab -->
+            <div class="tab-pane active" id="rsvp-tab">
+                <div class="guest-summary-card" id="guest-summary"></div>
+                <div class="content-section">
+                    <div id="rsvp-list"></div>
+                </div>
             </div>
-            <div class="host-name" id="current-host"></div>
-        </div>
-        
-        <div class="section">
-            <div class="section-header" onclick="toggleSection('rsvp')">
-                <h3>👥 Who's Coming? <span class="collapse-arrow" id="rsvp-arrow">▼</span></h3>
-            </div>
-            <div class="section-content" id="rsvp-content">
-                <div id="rsvp-list"></div>
-            </div>
-        </div>
-        
-        <div class="total-guests" id="guest-summary"></div>
-        
-        <div class="section">
-            <div class="section-header" onclick="toggleSection('bring')">
-                <h3>🍽️ Menu <span class="collapse-arrow" id="bring-arrow">▼</span></h3>
-                <button class="edit-btn" onclick="event.stopPropagation(); editItems()">✏️ Edit Items</button>
-            </div>
-            <div class="section-content" id="bring-content">
-                <!-- Notes field at the top -->
-                <div class="menu-notes-container">
-                    <div class="menu-notes-label">Notes:</div>
+
+            <!-- Menu Tab -->
+            <div class="tab-pane" id="menu-tab">
+                <div class="menu-notes-section">
+                    <label class="notes-label">Menu Notes:</label>
                     <textarea id="menu-notes" 
                               placeholder="Add any notes about the menu, dietary restrictions, special requests, etc..." 
                               oninput="updateMenuNotes(this.value)"></textarea>
                 </div>
-                <div id="bring-list"></div>
+                <div class="content-section">
+                    <div id="bring-list"></div>
+                </div>
+                <div class="edit-menu-actions">
+                    <button class="action-btn secondary" onclick="editItems()">
+                        ✏️ Edit Menu Items
+                    </button>
+                </div>
             </div>
-        </div>
-        
-        <button class="summary-btn" onclick="shareSummary()">
-            📱 Share Update
-        </button>
-        
-        <button class="summary-btn history-btn" onclick="showHistory()">
-            📅 History
-        </button>
-        
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-nav="plan" onclick="switchView('plan')">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Plan</span>
+            </button>
+            <button class="nav-btn" data-nav="history" onclick="switchView('history')">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">History</span>
+            </button>
+            <button class="nav-btn" data-nav="share" onclick="switchView('share')">
+                <span class="nav-icon">📱</span>
+                <span class="nav-label">Share</span>
+            </button>
+        </nav>
     </div>
 
     <!-- History View -->
@@ -1311,6 +1331,34 @@
                 }
             } catch (error) {
                 console.error('Failed to add initial history:', error);
+            }
+        }
+        
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            // Add active class to selected tab
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+        
+        // Bottom navigation functionality
+        function switchView(viewName) {
+            // Remove active class from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to selected nav button
+            document.querySelector(`[data-nav="${viewName}"]`).classList.add('active');
+            
+            if (viewName === 'plan') {
+                showMainView();
+            } else if (viewName === 'history') {
+                showHistory();
+            } else if (viewName === 'share') {
+                shareSummary();
             }
         }
     </script>
