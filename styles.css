@@ -57,12 +57,17 @@ body {
 /* History page tab navigation */
 #history-tab-nav {
     position: fixed;
-    top: 140px;
+    top: 170px;
     left: 0;
     right: 0;
-    z-index: 20;
+    z-index: 25;
     background: var(--card-bg);
     border-bottom: 1px solid var(--border-color);
+    display: none;
+}
+
+#history-tab-nav.visible {
+    display: flex;
 }
 
 /* Header */

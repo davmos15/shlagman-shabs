@@ -110,7 +110,7 @@
         </div>
         
         <!-- Tab Navigation -->
-        <nav class="tab-nav" id="history-tab-nav" style="display: none;">
+        <nav class="tab-nav" id="history-tab-nav">
             <button class="tab-btn active" data-tab="history-rsvp" onclick="switchHistoryTab('history-rsvp')">
                 👥 RSVP
             </button>
@@ -1223,7 +1223,7 @@
             const eventId = document.getElementById('history-select').value;
             if (!eventId) {
                 document.getElementById('history-content').style.display = 'none';
-                document.getElementById('history-tab-nav').style.display = 'none';
+                document.getElementById('history-tab-nav').classList.remove('visible');
                 return;
             }
             
@@ -1240,7 +1240,7 @@
         
         function displayHistoryEvent(data) {
             document.getElementById('history-content').style.display = 'block';
-            document.getElementById('history-tab-nav').style.display = 'flex';
+            document.getElementById('history-tab-nav').classList.add('visible');
             
             // Display guest summary
             document.getElementById('history-guest-summary').innerHTML = `
