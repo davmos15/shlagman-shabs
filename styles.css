@@ -212,7 +212,7 @@ body {
 /* RSVP Grid */
 .rsvp-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 55px 90px;
+    grid-template-columns: minmax(0, 1fr) 55px 105px;
     gap: 8px;
     padding: 8px;
     align-items: center;
@@ -288,7 +288,7 @@ body {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    width: 90px;
+    width: 105px;
     text-align: center;
 }
 
