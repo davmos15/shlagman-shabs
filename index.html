@@ -172,36 +172,44 @@
                 </button>
             </div>
             
-            <!-- Analog Clock -->
-            <div class="clock-container">
-                <div class="clock-face-container">
-                    <svg id="clock-face" width="200" height="200" class="clock-svg">
-                        <!-- Clock face -->
-                        <circle cx="100" cy="100" r="95" fill="white" stroke="#e2e8f0" stroke-width="2"/>
-                        
-                        <!-- Hour numbers -->
-                        <text x="100" y="25" text-anchor="middle" font-size="16" fill="#4a5568">12</text>
-                        <text x="150" y="45" text-anchor="middle" font-size="16" fill="#4a5568">1</text>
-                        <text x="180" y="80" text-anchor="middle" font-size="16" fill="#4a5568">2</text>
-                        <text x="190" y="105" text-anchor="middle" font-size="16" fill="#4a5568">3</text>
-                        <text x="180" y="130" text-anchor="middle" font-size="16" fill="#4a5568">4</text>
-                        <text x="150" y="165" text-anchor="middle" font-size="16" fill="#4a5568">5</text>
-                        <text x="100" y="185" text-anchor="middle" font-size="16" fill="#4a5568">6</text>
-                        <text x="50" y="165" text-anchor="middle" font-size="16" fill="#4a5568">7</text>
-                        <text x="20" y="130" text-anchor="middle" font-size="16" fill="#4a5568">8</text>
-                        <text x="10" y="105" text-anchor="middle" font-size="16" fill="#4a5568">9</text>
-                        <text x="20" y="80" text-anchor="middle" font-size="16" fill="#4a5568">10</text>
-                        <text x="50" y="45" text-anchor="middle" font-size="16" fill="#4a5568">11</text>
-                        
-                        <!-- Center dot -->
-                        <circle cx="100" cy="100" r="3" fill="#4a5568"/>
-                        
-                        <!-- Hour hand -->
-                        <line id="hour-hand" x1="100" y1="100" x2="100" y2="50" stroke="#2d3748" stroke-width="4" stroke-linecap="round"/>
-                        
-                        <!-- Minute hand -->
-                        <line id="minute-hand" x1="100" y1="100" x2="100" y2="30" stroke="#4299e1" stroke-width="3" stroke-linecap="round"/>
-                    </svg>
+            <!-- Time Dropdowns -->
+            <div class="time-selectors">
+                <div class="time-inputs">
+                    <input type="number" id="hour-input" min="1" max="12" value="7" 
+                           list="hour-list" onchange="updateTimeDisplay()" oninput="updateTimeDisplay()">
+                    <datalist id="hour-list">
+                        <option value="1">
+                        <option value="2">
+                        <option value="3">
+                        <option value="4">
+                        <option value="5">
+                        <option value="6">
+                        <option value="7">
+                        <option value="8">
+                        <option value="9">
+                        <option value="10">
+                        <option value="11">
+                        <option value="12">
+                    </datalist>
+                    
+                    <span class="time-separator">:</span>
+                    
+                    <input type="number" id="minute-input" min="0" max="59" value="00" 
+                           list="minute-list" onchange="updateTimeDisplay()" oninput="updateTimeDisplay()">
+                    <datalist id="minute-list">
+                        <option value="00">
+                        <option value="05">
+                        <option value="10">
+                        <option value="15">
+                        <option value="20">
+                        <option value="25">
+                        <option value="30">
+                        <option value="35">
+                        <option value="40">
+                        <option value="45">
+                        <option value="50">
+                        <option value="55">
+                    </datalist>
                 </div>
                 
                 <!-- AM/PM Toggle -->
@@ -746,9 +754,7 @@
             document.getElementById('date-modal').style.display = 'none';
         }
         
-        // Clock variables
-        let selectedHour = 7;
-        let selectedMinute = 0;
+        // Time selection variables
         let selectedAMPM = 'PM';
         
         function editTime() {
@@ -756,85 +762,40 @@
             if (currentTime && currentTime !== 'TBC') {
                 const [time, ampm] = currentTime.split(' ');
                 const [hour, minute] = time.split(':');
-                selectedHour = parseInt(hour);
-                selectedMinute = parseInt(minute);
+                
+                // Set input values
+                document.getElementById('hour-input').value = hour;
+                document.getElementById('minute-input').value = minute;
                 selectedAMPM = ampm || 'PM';
             } else {
                 // Default values
-                selectedHour = 7;
-                selectedMinute = 0;
+                document.getElementById('hour-input').value = '7';
+                document.getElementById('minute-input').value = '00';
                 selectedAMPM = 'PM';
             }
             
-            updateClockDisplay();
-            updateClockHands();
+            updateTimeDisplay();
             updateAMPMButtons();
             
             document.getElementById('time-modal').style.display = 'flex';
-            
-            // Add click event to clock face
-            const clockFace = document.getElementById('clock-face');
-            clockFace.addEventListener('click', handleClockClick);
         }
         
-        function handleClockClick(event) {
-            const rect = event.currentTarget.getBoundingClientRect();
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            const x = event.clientX - rect.left - centerX;
-            const y = event.clientY - rect.top - centerY;
+        function updateTimeDisplay() {
+            const hour = document.getElementById('hour-input').value;
+            const minute = document.getElementById('minute-input').value;
             
-            // Calculate angle from center
-            let angle = Math.atan2(x, -y) * (180 / Math.PI);
-            if (angle < 0) angle += 360;
+            // Validate and format inputs
+            const validHour = Math.max(1, Math.min(12, parseInt(hour) || 7));
+            const validMinute = Math.max(0, Math.min(59, parseInt(minute) || 0));
+            const formattedMinute = validMinute.toString().padStart(2, '0');
             
-            // Calculate distance from center
-            const distance = Math.sqrt(x * x + y * y);
-            const maxDistance = rect.width / 2;
-            
-            if (distance < maxDistance * 0.6) {
-                // Clicked on inner area - set hour
-                selectedHour = Math.round(angle / 30) || 12;
-            } else {
-                // Clicked on outer area - set minute
-                selectedMinute = Math.round(angle / 6) % 60;
-            }
-            
-            updateClockDisplay();
-            updateClockHands();
-        }
-        
-        function updateClockHands() {
-            const hourHand = document.getElementById('hour-hand');
-            const minuteHand = document.getElementById('minute-hand');
-            
-            // Calculate angles
-            const hourAngle = (selectedHour % 12) * 30 + (selectedMinute / 60) * 30;
-            const minuteAngle = selectedMinute * 6;
-            
-            // Update hour hand
-            const hourX = 100 + 50 * Math.sin(hourAngle * Math.PI / 180);
-            const hourY = 100 - 50 * Math.cos(hourAngle * Math.PI / 180);
-            hourHand.setAttribute('x2', hourX);
-            hourHand.setAttribute('y2', hourY);
-            
-            // Update minute hand
-            const minuteX = 100 + 70 * Math.sin(minuteAngle * Math.PI / 180);
-            const minuteY = 100 - 70 * Math.cos(minuteAngle * Math.PI / 180);
-            minuteHand.setAttribute('x2', minuteX);
-            minuteHand.setAttribute('y2', minuteY);
-        }
-        
-        function updateClockDisplay() {
-            const displayHour = selectedHour === 0 ? 12 : selectedHour;
-            const displayMinute = selectedMinute.toString().padStart(2, '0');
-            document.getElementById('time-display').textContent = `${displayHour}:${displayMinute} ${selectedAMPM}`;
+            document.getElementById('time-display').textContent = `${validHour}:${formattedMinute} ${selectedAMPM}`;
         }
         
         function setAMPM(ampm) {
             selectedAMPM = ampm;
             updateAMPMButtons();
-            updateClockDisplay();
+            updateTimeDisplay();
         }
         
         function updateAMPMButtons() {
@@ -858,9 +819,15 @@
         }
         
         function saveTime() {
-            const displayHour = selectedHour === 0 ? 12 : selectedHour;
-            const displayMinute = selectedMinute.toString().padStart(2, '0');
-            currentTime = `${displayHour}:${displayMinute} ${selectedAMPM}`;
+            const hour = document.getElementById('hour-input').value;
+            const minute = document.getElementById('minute-input').value;
+            
+            // Validate and format inputs
+            const validHour = Math.max(1, Math.min(12, parseInt(hour) || 7));
+            const validMinute = Math.max(0, Math.min(59, parseInt(minute) || 0));
+            const formattedMinute = validMinute.toString().padStart(2, '0');
+            
+            currentTime = `${validHour}:${formattedMinute} ${selectedAMPM}`;
             updateDisplay();
             saveStateToFirebase();
             closeTimeModal();

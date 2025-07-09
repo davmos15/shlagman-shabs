@@ -410,31 +410,55 @@ textarea {
     margin-bottom: 15px;
 }
 
-.clock-container {
+.time-selectors {
     display: flex;
+    flex-direction: column;
     gap: 20px;
     align-items: center;
-    justify-content: center;
+    margin: 20px 0;
 }
 
-.clock-face-container {
-    position: relative;
-    width: 200px;
-    height: 200px;
+.time-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
 }
 
-.clock-svg {
-    cursor: pointer;
+#hour-input,
+#minute-input {
+    width: 60px;
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 18px;
+    text-align: center;
+    font-weight: bold;
+    background: white;
+}
+
+#hour-input:focus,
+#minute-input:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.time-separator {
+    font-size: 24px;
+    font-weight: bold;
+    color: #4a5568;
+    margin: 0 5px;
 }
 
 .ampm-buttons {
     display: flex;
-    flex-direction: column;
     gap: 10px;
 }
 
 .ampm-buttons button {
-    padding: 15px 20px;
+    padding: 10px 20px;
+    min-width: 60px;
 }
 
 .time-display {
