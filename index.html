@@ -175,41 +175,37 @@
             <!-- Time Dropdowns -->
             <div class="time-selectors">
                 <div class="time-inputs">
-                    <input type="number" id="hour-input" min="1" max="12" value="7" 
-                           list="hour-list" onchange="updateTimeDisplay()" oninput="updateTimeDisplay()">
-                    <datalist id="hour-list">
-                        <option value="1">
-                        <option value="2">
-                        <option value="3">
-                        <option value="4">
-                        <option value="5">
-                        <option value="6">
-                        <option value="7">
-                        <option value="8">
-                        <option value="9">
-                        <option value="10">
-                        <option value="11">
-                        <option value="12">
-                    </datalist>
+                    <select id="hour-select" onchange="updateTimeDisplay()">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7" selected>7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
                     
                     <span class="time-separator">:</span>
                     
-                    <input type="number" id="minute-input" min="0" max="59" value="00" 
-                           list="minute-list" onchange="updateTimeDisplay()" oninput="updateTimeDisplay()">
-                    <datalist id="minute-list">
-                        <option value="00">
-                        <option value="05">
-                        <option value="10">
-                        <option value="15">
-                        <option value="20">
-                        <option value="25">
-                        <option value="30">
-                        <option value="35">
-                        <option value="40">
-                        <option value="45">
-                        <option value="50">
-                        <option value="55">
-                    </datalist>
+                    <select id="minute-select" onchange="updateTimeDisplay()">
+                        <option value="00" selected>00</option>
+                        <option value="05">05</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                        <option value="25">25</option>
+                        <option value="30">30</option>
+                        <option value="35">35</option>
+                        <option value="40">40</option>
+                        <option value="45">45</option>
+                        <option value="50">50</option>
+                        <option value="55">55</option>
+                    </select>
                 </div>
                 
                 <!-- AM/PM Toggle -->
@@ -763,14 +759,14 @@
                 const [time, ampm] = currentTime.split(' ');
                 const [hour, minute] = time.split(':');
                 
-                // Set input values
-                document.getElementById('hour-input').value = hour;
-                document.getElementById('minute-input').value = minute;
+                // Set select values
+                document.getElementById('hour-select').value = hour;
+                document.getElementById('minute-select').value = minute;
                 selectedAMPM = ampm || 'PM';
             } else {
                 // Default values
-                document.getElementById('hour-input').value = '7';
-                document.getElementById('minute-input').value = '00';
+                document.getElementById('hour-select').value = '7';
+                document.getElementById('minute-select').value = '00';
                 selectedAMPM = 'PM';
             }
             
@@ -781,15 +777,10 @@
         }
         
         function updateTimeDisplay() {
-            const hour = document.getElementById('hour-input').value;
-            const minute = document.getElementById('minute-input').value;
+            const hour = document.getElementById('hour-select').value;
+            const minute = document.getElementById('minute-select').value;
             
-            // Validate and format inputs
-            const validHour = Math.max(1, Math.min(12, parseInt(hour) || 7));
-            const validMinute = Math.max(0, Math.min(59, parseInt(minute) || 0));
-            const formattedMinute = validMinute.toString().padStart(2, '0');
-            
-            document.getElementById('time-display').textContent = `${validHour}:${formattedMinute} ${selectedAMPM}`;
+            document.getElementById('time-display').textContent = `${hour}:${minute} ${selectedAMPM}`;
         }
         
         function setAMPM(ampm) {
@@ -819,15 +810,10 @@
         }
         
         function saveTime() {
-            const hour = document.getElementById('hour-input').value;
-            const minute = document.getElementById('minute-input').value;
+            const hour = document.getElementById('hour-select').value;
+            const minute = document.getElementById('minute-select').value;
             
-            // Validate and format inputs
-            const validHour = Math.max(1, Math.min(12, parseInt(hour) || 7));
-            const validMinute = Math.max(0, Math.min(59, parseInt(minute) || 0));
-            const formattedMinute = validMinute.toString().padStart(2, '0');
-            
-            currentTime = `${validHour}:${formattedMinute} ${selectedAMPM}`;
+            currentTime = `${hour}:${minute} ${selectedAMPM}`;
             updateDisplay();
             saveStateToFirebase();
             closeTimeModal();
