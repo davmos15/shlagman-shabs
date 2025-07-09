@@ -57,7 +57,7 @@ body {
 /* History page tab navigation */
 #history-tab-nav {
     position: fixed;
-    top: 170px;
+    top: 200px;
     left: 0;
     right: 0;
     z-index: 25;
