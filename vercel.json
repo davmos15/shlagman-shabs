@@ -1,10 +1,5 @@
 {
   "buildCommand": "node build.js",
   "outputDirectory": ".",
-  "framework": null,
-  "build": {
-    "env": {
-      "FIREBASE_API_KEY": "@firebase-api-key"
-    }
-  }
+  "framework": null
 }
