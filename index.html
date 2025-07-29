@@ -457,13 +457,20 @@
         }
         
         async function loadStateFromFirebase() {
+            console.log("🔄 Loading state from Firebase...");
             try {
                 const doc = await db.collection('shabbat-plans').doc('current').get();
+                console.log("Document exists:", doc.exists);
+                
                 if (doc.exists) {
                     const data = doc.data();
+                    console.log("📥 Loaded data from Firebase:", data);
                     
                     // Load data from Firebase
-                    if (data.rsvpData) rsvpData = data.rsvpData;
+                    if (data.rsvpData) {
+                        rsvpData = data.rsvpData;
+                        console.log("✅ Loaded RSVP data:", Object.keys(rsvpData).length, "members");
+                    }
                     if (data.bringData) bringData = data.bringData;
                     if (data.currentHost) currentHost = data.currentHost;
                     if (data.currentDate) currentDate = data.currentDate;
@@ -487,13 +494,15 @@
                     
                     initializeBringData();
                     updateDisplay();
+                    console.log("✅ State loaded and display updated");
                     // updateSyncStatus('online');
                 } else {
+                    console.log("⚠️ No existing data found, creating initial state");
                     // No existing data, create initial state
                     await saveStateToFirebase();
                 }
             } catch (error) {
-                console.error('Failed to load from Firebase:', error);
+                console.error('❌ Failed to load from Firebase:', error);
                 // updateSyncStatus('offline');
             }
         }
