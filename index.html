@@ -11,9 +11,6 @@
     
     <!-- External CSS -->
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- Configuration (optional - for local development) -->
-    <script src="config.js" onerror="console.log('No local config file')"></script>
 </head>
 <body>
     <div class="app-container" id="main-view">
@@ -322,16 +319,9 @@
     </div>
 
     <script>
-        // Firebase Configuration
-        let apiKey = "FIREBASE_API_KEY_PLACEHOLDER";
-        
-        // Check if API key is available from config.js (local development) or window.FIREBASE_CONFIG
-        if (typeof window.FIREBASE_CONFIG !== 'undefined' && window.FIREBASE_CONFIG.apiKey) {
-            apiKey = window.FIREBASE_CONFIG.apiKey;
-        }
-        
-        const firebaseConfig = {
-            apiKey: apiKey,
+        // Firebase Configuration - will be loaded dynamically
+        let firebaseConfig = {
+            apiKey: "FIREBASE_API_KEY_PLACEHOLDER",
             authDomain: "shlagman-shabs.firebaseapp.com",
             projectId: "shlagman-shabs",
             storageBucket: "shlagman-shabs.firebasestorage.app",
