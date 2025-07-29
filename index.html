@@ -341,13 +341,32 @@
         };
 
         // Initialize Firebase
+        let db;
         if (firebaseConfig.apiKey === "FIREBASE_API_KEY_PLACEHOLDER" || firebaseConfig.apiKey === "YOUR_FIREBASE_API_KEY_HERE") {
             console.error("Firebase API key not configured. Please check deployment settings.");
             alert("Configuration error: Firebase API key not set. Please contact the administrator.");
         } else {
-            firebase.initializeApp(firebaseConfig);
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                console.log("Firebase initialized successfully with API key starting with:", firebaseConfig.apiKey.substring(0, 10) + "...");
+                
+                // Test Firebase connection
+                db.collection('test').doc('connection').set({
+                    test: true,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    console.log("✅ Firebase write test successful");
+                }).catch((error) => {
+                    console.error("❌ Firebase write test failed:", error);
+                    console.error("Error code:", error.code);
+                    console.error("Error message:", error.message);
+                });
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                alert("Firebase initialization failed. Check console for details.");
+            }
         }
-        const db = firebase.firestore();
         
         // Family members from the WhatsApp group (alphabetical order)
         const familyMembers = [
@@ -391,6 +410,12 @@
         
         // Firebase Functions
         async function saveStateToFirebase() {
+            console.log("Attempting to save to Firebase...");
+            
+            if (!db) {
+                console.error("Database not initialized - cannot save");
+                return;
+            }
             
             try {
                 const state = {
@@ -405,9 +430,20 @@
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
+                console.log("Saving state:", state);
                 await db.collection('shabbat-plans').doc('current').set(state);
+                console.log("✅ Successfully saved to Firebase");
             } catch (error) {
-                console.error('Failed to save to Firebase:', error);
+                console.error('❌ Failed to save to Firebase:', error);
+                console.error('Error code:', error.code);
+                console.error('Error message:', error.message);
+                
+                // Show user-friendly error
+                if (error.code === 'permission-denied') {
+                    alert('Unable to save: Permission denied. Please check Firebase security rules.');
+                } else if (error.code === 'unavailable') {
+                    alert('Unable to save: Connection to Firebase lost. Please check your internet connection.');
+                }
             }
         }
 
