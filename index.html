@@ -1247,6 +1247,7 @@
         }
         
         function resetToDefaults() {
+            console.log("🔄 Resetting to defaults (this will overwrite current data!)");
             // Reset all RSVP data to default state
             familyMembers.forEach(member => {
                 const defaultCount = defaultGuestCounts[member] || 1;
@@ -1267,6 +1268,7 @@
             menuNotes = '';
             
             updateDisplay();
+            console.log("💾 Saving reset data to Firebase...");
             saveStateToFirebase();
         }
         
@@ -1448,8 +1450,10 @@
         
         // Check if we need to archive (runs on page load)
         function checkAutoArchive() {
+            console.log("🔍 Checking if auto-archive is needed...");
             // Only check for archiving if there's actual data to archive
             if (!currentDate && Object.keys(rsvpData).length === 0 && bringItems.length === 0) {
+                console.log("❌ No data to archive, skipping");
                 return; // No data to archive
             }
             
@@ -1482,7 +1486,10 @@
                 saturdayNight.setHours(20, 0, 0, 0); // 8 PM Saturday
                 
                 if (now > saturdayNight) {
+                    console.log("📦 Auto-archiving Friday event (it's past Saturday night)");
                     archiveCurrentEvent();
+                } else {
+                    console.log("✅ Friday event is still current");
                 }
             } else if (eventDate.getDay() === 6) { // Saturday
                 const sundayMorning = new Date(eventDate);
@@ -1490,7 +1497,10 @@
                 sundayMorning.setHours(8, 0, 0, 0); // 8 AM Sunday
                 
                 if (now > sundayMorning) {
+                    console.log("📦 Auto-archiving Saturday event (it's past Sunday morning)");
                     archiveCurrentEvent();
+                } else {
+                    console.log("✅ Saturday event is still current");
                 }
             }
         }
