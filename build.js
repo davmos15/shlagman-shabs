@@ -32,9 +32,27 @@ try {
         // Replace the placeholder with the actual API key
         content = content.replace(/FIREBASE_API_KEY_PLACEHOLDER/g, firebaseApiKey);
         
-        // Write the updated content back to index.html
-        fs.writeFileSync(indexPath, content);
-        console.log('✅ Firebase API key successfully injected into index.html');
+        // Create a dist directory for the output
+        const distDir = path.join(__dirname, 'dist');
+        if (!fs.existsSync(distDir)) {
+            fs.mkdirSync(distDir);
+        }
+        
+        // Write the updated content to dist/index.html
+        const outputPath = path.join(distDir, 'index.html');
+        fs.writeFileSync(outputPath, content);
+        console.log('✅ Firebase API key successfully injected into', outputPath);
+        
+        // Copy other files to dist
+        const filesToCopy = ['styles.css', 'middleware.js', 'vercel.json'];
+        filesToCopy.forEach(file => {
+            const srcPath = path.join(__dirname, file);
+            const destPath = path.join(distDir, file);
+            if (fs.existsSync(srcPath)) {
+                fs.copyFileSync(srcPath, destPath);
+                console.log('Copied', file, 'to dist');
+            }
+        });
     } else {
         console.log('⚠️ Placeholder not found in index.html');
     }
