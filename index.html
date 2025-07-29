@@ -11,6 +11,9 @@
     
     <!-- External CSS -->
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- Configuration (optional - for local development) -->
+    <script src="config.js" onerror="console.log('No local config file')"></script>
 </head>
 <body>
     <div class="app-container" id="main-view">
@@ -320,8 +323,15 @@
 
     <script>
         // Firebase Configuration
+        let apiKey = "FIREBASE_API_KEY_PLACEHOLDER";
+        
+        // Check if API key is available from config.js (local development) or window.FIREBASE_CONFIG
+        if (typeof window.FIREBASE_CONFIG !== 'undefined' && window.FIREBASE_CONFIG.apiKey) {
+            apiKey = window.FIREBASE_CONFIG.apiKey;
+        }
+        
         const firebaseConfig = {
-            apiKey: "FIREBASE_API_KEY_PLACEHOLDER",
+            apiKey: apiKey,
             authDomain: "shlagman-shabs.firebaseapp.com",
             projectId: "shlagman-shabs",
             storageBucket: "shlagman-shabs.firebasestorage.app",
@@ -331,7 +341,12 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        if (firebaseConfig.apiKey === "FIREBASE_API_KEY_PLACEHOLDER" || firebaseConfig.apiKey === "YOUR_FIREBASE_API_KEY_HERE") {
+            console.error("Firebase API key not configured. Please check deployment settings.");
+            alert("Configuration error: Firebase API key not set. Please contact the administrator.");
+        } else {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
         
         // Family members from the WhatsApp group (alphabetical order)
