@@ -87,6 +87,22 @@ Security headers via Vercel Edge Middleware:
 - HTTPS enforcement
 - DNS prefetch control
 
+### Firebase API Key Management
+
+The Firebase API key is stored as a GitHub secret and injected at build time:
+
+1. **Local Development**: Set `FIREBASE_API_KEY` environment variable
+2. **Production**: GitHub Actions injects the key from secrets during deployment
+3. **Security**: API key never appears in source code or repository
+
+#### Setup GitHub Secrets
+
+Add these secrets to your GitHub repository:
+- `FIREBASE_API_KEY` - Your Firebase Web API key
+- `VERCEL_TOKEN` - Your Vercel deployment token
+- `ORG_ID` - Your Vercel organization ID
+- `PROJECT_ID` - Your Vercel project ID
+
 ## 👨‍👩‍👧‍👦 Family Configuration
 
 Pre-configured family members:
