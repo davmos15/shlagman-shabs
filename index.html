@@ -1164,8 +1164,8 @@
             initializeBringData();
             updateDisplay();
             
-            // Check if we need to auto-archive
-            // checkAutoArchive(); // Temporarily disabled - was resetting data on every page load
+            // Check if we need to auto-archive after loading from Firebase
+            await checkAutoArchive();
             
             // Add initial history if needed
             addInitialHistoryIfNeeded();
@@ -1231,6 +1231,7 @@
                 bringData: bringData,
                 bringItems: bringItems,
                 additionalGuests: additionalGuests,
+                menuNotes: menuNotes || '',
                 totalGuests: calculateTotalGuests(),
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -1247,7 +1248,8 @@
         }
         
         function resetToDefaults() {
-            console.log("🔄 Resetting to defaults (this will overwrite current data!)");
+            console.log("🔄 Resetting to defaults and setting up next event");
+            
             // Reset all RSVP data to default state
             familyMembers.forEach(member => {
                 const defaultCount = defaultGuestCounts[member] || 1;
@@ -1261,15 +1263,46 @@
             // Clear additional guests
             additionalGuests = [];
             
-            // Reset host, date, and time
-            currentHost = '';
-            currentDate = '';
-            currentTime = '7:00 PM';
+            // Clear menu notes
             menuNotes = '';
+            
+            // Set up next event
+            setupNextEvent();
             
             updateDisplay();
             console.log("💾 Saving reset data to Firebase...");
             saveStateToFirebase();
+        }
+        
+        function setupNextEvent() {
+            // Get the next host in rotation
+            const previousHost = currentHost || getCurrentHost();
+            const currentIndex = hostRotation.indexOf(previousHost);
+            const nextIndex = (currentIndex + 1) % hostRotation.length;
+            currentHost = hostRotation[nextIndex];
+            console.log(`🏠 Next host set to: ${currentHost}`);
+            
+            // Calculate next Friday
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            let daysUntilFriday;
+            
+            // If it's Friday or Saturday, go to next Friday
+            if (dayOfWeek === 5 || dayOfWeek === 6) {
+                daysUntilFriday = (12 - dayOfWeek) % 7;
+            } else {
+                // Sunday through Thursday
+                daysUntilFriday = (5 - dayOfWeek + 7) % 7;
+                if (daysUntilFriday === 0) daysUntilFriday = 7;
+            }
+            
+            const nextFriday = new Date(today);
+            nextFriday.setDate(today.getDate() + daysUntilFriday);
+            currentDate = nextFriday.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            console.log(`📅 Next date set to: ${currentDate}`);
+            
+            // Keep default time
+            currentTime = '7:00 PM';
         }
         
         function calculateTotalGuests() {
@@ -1416,6 +1449,19 @@
             const menuContainer = document.getElementById('history-menu-list');
             menuContainer.innerHTML = '';
             
+            // Add menu notes if they exist
+            if (data.menuNotes && data.menuNotes.trim() !== '') {
+                const notesDiv = document.createElement('div');
+                notesDiv.className = 'menu-notes-section';
+                notesDiv.innerHTML = `
+                    <label class="notes-label">Menu Notes:</label>
+                    <div style="padding: 10px; background: var(--background); border-radius: 8px; white-space: pre-wrap;">
+                        ${data.menuNotes}
+                    </div>
+                `;
+                menuContainer.appendChild(notesDiv);
+            }
+            
             if (data.bringItems && data.bringData) {
                 data.bringItems.forEach(item => {
                     if (data.bringData[item] && data.bringData[item].assigned) {
@@ -1449,12 +1495,17 @@
         
         
         // Check if we need to archive (runs on page load)
-        function checkAutoArchive() {
+        async function checkAutoArchive() {
             console.log("🔍 Checking if auto-archive is needed...");
-            // Only check for archiving if there's actual data to archive
-            if (!currentDate && Object.keys(rsvpData).length === 0 && bringItems.length === 0) {
-                console.log("❌ No data to archive, skipping");
-                return; // No data to archive
+            
+            // Check if there's meaningful data to archive
+            const hasRSVPData = Object.values(rsvpData).some(r => r.status !== 'pending');
+            const hasMenuData = bringItems.length > 0 || Object.keys(bringData).some(item => bringData[item] && bringData[item] !== '');
+            const hasAdditionalGuests = additionalGuests.length > 0;
+            
+            if (!hasRSVPData && !hasMenuData && !hasAdditionalGuests) {
+                console.log("❌ No meaningful data to archive, skipping");
+                return;
             }
             
             // Get the event date - either manually set or calculated
@@ -1462,43 +1513,48 @@
             if (currentDate) {
                 eventDate = new Date(currentDate);
             } else {
-                // If no manual date set, check if we have data from a previous event
-                // that needs archiving by checking if it's past the typical Friday
+                // If no manual date set, assume it's for the last/current Friday
                 const today = new Date();
-                const lastFriday = new Date(today);
-                const daysFromLastFriday = (today.getDay() + 2) % 7; // Days since last Friday
-                lastFriday.setDate(today.getDate() - daysFromLastFriday);
+                const dayOfWeek = today.getDay();
+                const daysFromFriday = dayOfWeek === 0 ? 2 : (dayOfWeek === 6 ? 1 : (5 - dayOfWeek + 7) % 7);
                 
-                // If we have data but no current date, assume it's from last Friday
-                if (Object.values(rsvpData).some(r => r.status !== 'pending') || bringItems.length > 0) {
-                    eventDate = lastFriday;
+                // If it's Sunday-Thursday, assume data is from last Friday
+                // If it's Friday or Saturday, use current Friday
+                if (dayOfWeek === 0 || (dayOfWeek >= 1 && dayOfWeek <= 4)) {
+                    // Sunday through Thursday - use last Friday
+                    eventDate = new Date(today);
+                    eventDate.setDate(today.getDate() - ((dayOfWeek + 2) % 7));
                 } else {
-                    return; // No data to archive
+                    // Friday or Saturday - use current Friday
+                    eventDate = new Date(today);
+                    if (dayOfWeek === 6) {
+                        eventDate.setDate(today.getDate() - 1);
+                    }
                 }
             }
             
             const now = new Date();
             
-            // If the event was on Friday or Saturday and it's now after the event
-            if (eventDate.getDay() === 5) { // Friday
-                const saturdayNight = new Date(eventDate);
-                saturdayNight.setDate(eventDate.getDate() + 1); // Saturday
-                saturdayNight.setHours(20, 0, 0, 0); // 8 PM Saturday
+            // Archive if the event date is in the past and it's the morning after
+            if (eventDate.getDay() === 5) { // Friday event
+                const saturdayMorning = new Date(eventDate);
+                saturdayMorning.setDate(eventDate.getDate() + 1);
+                saturdayMorning.setHours(9, 0, 0, 0); // 9 AM Saturday morning
                 
-                if (now > saturdayNight) {
-                    console.log("📦 Auto-archiving Friday event (it's past Saturday night)");
-                    archiveCurrentEvent();
+                if (now > saturdayMorning) {
+                    console.log("📦 Auto-archiving Friday night event");
+                    await archiveCurrentEvent();
                 } else {
                     console.log("✅ Friday event is still current");
                 }
-            } else if (eventDate.getDay() === 6) { // Saturday
+            } else if (eventDate.getDay() === 6) { // Saturday lunch
                 const sundayMorning = new Date(eventDate);
-                sundayMorning.setDate(eventDate.getDate() + 1); // Sunday
-                sundayMorning.setHours(8, 0, 0, 0); // 8 AM Sunday
+                sundayMorning.setDate(eventDate.getDate() + 1);
+                sundayMorning.setHours(9, 0, 0, 0); // 9 AM Sunday morning
                 
                 if (now > sundayMorning) {
-                    console.log("📦 Auto-archiving Saturday event (it's past Sunday morning)");
-                    archiveCurrentEvent();
+                    console.log("📦 Auto-archiving Saturday lunch event");
+                    await archiveCurrentEvent();
                 } else {
                     console.log("✅ Saturday event is still current");
                 }
