@@ -587,10 +587,10 @@
             }
             
             const dayOfWeek = dateObj.getDay();
-            const formattedDate = dateObj.toLocaleDateString('en-AU', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+            const formattedDate = dateObj.toLocaleDateString('en-AU', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
             });
             
             // Return appropriate format based on day of week
@@ -1102,10 +1102,10 @@
             }
             
             // Format the date as requested
-            const formattedDate = eventDate.toLocaleDateString('en-AU', { 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric' 
+            const formattedDate = eventDate.toLocaleDateString('en-AU', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
             });
             
             // Determine if it's lunch or dinner based on the date string
@@ -1348,10 +1348,10 @@
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     const dateObj = new Date(data.date);
-                    const dateStr = dateObj.toLocaleDateString('en-AU', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                    const dateStr = dateObj.toLocaleDateString('en-AU', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
                     });
                     
                     const option = document.createElement('option');
