@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Shlagman Shabs Plan</title>
     
     <!-- Firebase Scripts -->
@@ -48,7 +48,7 @@
         <!-- Tab Content -->
         <main class="tab-content">
             <!-- RSVP Tab -->
-            <div class="tab-pane active" id="rsvp-tab">
+            <div class="tab-pane active" id="rsvp-tab" data-section-title="Who's Coming">
                 <div class="guest-summary-card" id="guest-summary"></div>
                 <div class="content-section">
                     <div id="rsvp-list"></div>
@@ -56,7 +56,7 @@
             </div>
 
             <!-- Menu Tab -->
-            <div class="tab-pane" id="menu-tab">
+            <div class="tab-pane" id="menu-tab" data-section-title="Menu">
                 <div class="menu-notes-section">
                     <label class="notes-label">Menu Notes:</label>
                     <textarea id="menu-notes" 
@@ -283,7 +283,9 @@
     <div class="modal" id="guests-modal">
         <div class="modal-content">
             <h3>Add Additional Guests</h3>
-            <input type="text" id="guest-name-input" placeholder="Guest name..." 
+            <input type="text" id="guest-name-input" placeholder="Family or guest name..."
+                   class="guest-input">
+            <input type="text" id="guest-members-input" placeholder="Individual names (comma separated, optional)..."
                    class="guest-input"
                    onkeypress="if(event.key==='Enter') addGuest()">
             <div class="modal-buttons">
@@ -318,6 +320,49 @@
         </div>
     </div>
 
+    <!-- Custom Confirm Modal -->
+    <div class="modal" id="confirm-modal">
+        <div class="modal-content confirm-modal-content">
+            <h3 id="confirm-modal-title">Confirm</h3>
+            <p id="confirm-modal-message"></p>
+            <div class="modal-buttons">
+                <button class="modal-btn primary" id="confirm-modal-yes">Yes</button>
+                <button class="modal-btn secondary" id="confirm-modal-no">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Prompt Modal -->
+    <div class="modal" id="prompt-modal">
+        <div class="modal-content">
+            <h3 id="prompt-modal-title">Edit</h3>
+            <input type="text" id="prompt-modal-input" class="prompt-modal-input" placeholder="">
+            <div class="modal-buttons">
+                <button class="modal-btn primary" id="prompt-modal-ok">OK</button>
+                <button class="modal-btn secondary" id="prompt-modal-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <!-- Holiday Modal -->
+    <div class="modal" id="holiday-modal">
+        <div class="modal-content">
+            <h3 id="holiday-modal-title">Set Holiday</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 12px; font-size: 14px;">They will be marked as Not Coming until the holiday ends.</p>
+            <div id="holiday-emoji-picker" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;"></div>
+            <input type="date" id="holiday-date-input" class="date-input" style="margin-bottom: 12px;">
+            <div class="modal-buttons" style="flex-wrap: wrap; gap: 8px;">
+                <button class="modal-btn primary" id="holiday-set-btn">Set Holiday</button>
+                <button class="modal-btn secondary" id="holiday-indefinite-btn">Indefinite</button>
+                <button class="modal-btn secondary" id="holiday-clear-btn" style="background: var(--warning-color); color: white;">Remove Holiday</button>
+                <button class="modal-btn secondary" id="holiday-cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
     <script>
         // Firebase Configuration - will be loaded dynamically
         let firebaseConfig = {
@@ -334,7 +379,6 @@
         let db;
         if (firebaseConfig.apiKey === "PLACEHOLDER_NOT_REPLACED" || firebaseConfig.apiKey === "YOUR_FIREBASE_API_KEY_HERE") {
             console.error("Firebase API key not configured. Please check deployment settings.");
-            alert("Configuration error: Firebase API key not set. Please contact the administrator.");
         } else {
             try {
                 firebase.initializeApp(firebaseConfig);
@@ -354,16 +398,93 @@
                 });
             } catch (error) {
                 console.error("Firebase initialization error:", error);
-                alert("Firebase initialization failed. Check console for details.");
             }
         }
         
+        // --- Utility Functions ---
+
+        // Toast notification
+        function showToast(message, duration = 2500) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), duration);
+        }
+
+        // Custom confirm dialog (returns a Promise)
+        function showConfirm(title, message) {
+            return new Promise((resolve) => {
+                document.getElementById('confirm-modal-title').textContent = title;
+                document.getElementById('confirm-modal-message').textContent = message;
+                document.getElementById('confirm-modal').style.display = 'flex';
+
+                const yesBtn = document.getElementById('confirm-modal-yes');
+                const noBtn = document.getElementById('confirm-modal-no');
+
+                function cleanup() {
+                    document.getElementById('confirm-modal').style.display = 'none';
+                    yesBtn.replaceWith(yesBtn.cloneNode(true));
+                    noBtn.replaceWith(noBtn.cloneNode(true));
+                }
+
+                yesBtn.onclick = () => { cleanup(); resolve(true); };
+                noBtn.onclick = () => { cleanup(); resolve(false); };
+                document.getElementById('confirm-modal').onclick = (e) => {
+                    if (e.target === document.getElementById('confirm-modal')) { cleanup(); resolve(false); }
+                };
+            });
+        }
+
+        // Custom prompt dialog (returns a Promise)
+        function showPrompt(title, defaultValue) {
+            return new Promise((resolve) => {
+                document.getElementById('prompt-modal-title').textContent = title;
+                const input = document.getElementById('prompt-modal-input');
+                input.value = defaultValue || '';
+                document.getElementById('prompt-modal').style.display = 'flex';
+                setTimeout(() => input.focus(), 100);
+
+                const okBtn = document.getElementById('prompt-modal-ok');
+                const cancelBtn = document.getElementById('prompt-modal-cancel');
+
+                function cleanup() {
+                    document.getElementById('prompt-modal').style.display = 'none';
+                    okBtn.replaceWith(okBtn.cloneNode(true));
+                    cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+                    input.onkeypress = null;
+                }
+
+                okBtn.onclick = () => { const val = input.value.trim(); cleanup(); resolve(val || null); };
+                cancelBtn.onclick = () => { cleanup(); resolve(null); };
+                input.onkeypress = (e) => { if (e.key === 'Enter') { const val = input.value.trim(); cleanup(); resolve(val || null); } };
+                document.getElementById('prompt-modal').onclick = (e) => {
+                    if (e.target === document.getElementById('prompt-modal')) { cleanup(); resolve(null); }
+                };
+            });
+        }
+
+        // HTML escaping to prevent XSS
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Debounce helper
+        function debounce(fn, delay) {
+            let timer;
+            return function(...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+
         // Family members from the WhatsApp group (alphabetical order)
         const familyMembers = [
             'Adi & Gabe', 'Begleiter', 'Bobba', 'Gilla',
-            'Meyerowitz', 'Mosbergs', 'Moskow 29b', 'Moskow 5/66', 'PBs'
+            'Meyerowitz', 'Mosberg', 'Moskow 29b', 'Moskow 5/66', 'PB'
         ];
-        
+
         // Default guest counts for each family
         const defaultGuestCounts = {
             'Adi & Gabe': 2,
@@ -371,10 +492,21 @@
             'Bobba': 1,
             'Gilla': 1,
             'Meyerowitz': 6,
-            'Mosbergs': 2,
-            'Moskow 29b': 2,
-            'Moskow 5/66': 2,
-            'PBs': 4
+            'Mosberg': 2,
+            'Moskow 29b': 3,
+            'Moskow 5/66': 3,
+            'PB': 6
+        };
+
+        // Named sub-members for families (optional)
+        const familySubMembers = {
+            'Adi & Gabe': ['Adi', 'Gabe'],
+            'Begleiter': ['Jake', 'Tali'],
+            'Meyerowitz': ['Lawrence', 'Ruth', 'Eity', 'Gili', 'Amir', 'Lior'],
+            'Mosberg': ['Ari', 'Ellie'],
+            'Moskow 29b': ['Gary', 'Tamar', 'Ori'],
+            'Moskow 5/66': ['Davi', 'Zeecee', 'Yakira'],
+            'PB': ['Josh', 'Yael', 'Noah', 'Libby', 'Raph', 'Lyla']
         };
         
         // Host rotation (every 2 weeks)
@@ -392,11 +524,217 @@
         let additionalGuests = [];
         let menuNotes = ''; // Notes for the menu section
         let favouritesData = {}; // Family favourites data
+        let holidayData = {}; // { 'familyName': { until: '2026-04-10' | 'indefinite' }, 'familyName:subName': { until: ... } }
+
+        // Holiday functions
+        function getHolidayKey(family, subName) {
+            return subName ? family + ':' + subName : family;
+        }
+
+        function isOnHoliday(family, subName) {
+            const key = getHolidayKey(family, subName);
+            const h = holidayData[key];
+            if (!h) return false;
+            if (h.until === 'indefinite') return true;
+            return new Date(h.until) >= new Date(new Date().toISOString().split('T')[0]);
+        }
+
+        function getHolidayLabel(family, subName) {
+            const key = getHolidayKey(family, subName);
+            const h = holidayData[key];
+            if (!h) return '';
+            if (h.until === 'indefinite') return 'Away';
+            const d = new Date(h.until);
+            return 'til ' + d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+        }
+
+        const defaultHolidayEmoji = '🏝️';
+        const holidayEmojiOptions = ['🏝️', '✈️', '🏖️', '🇮🇱'];
+
+        function getHolidayEmoji(family, subName) {
+            const key = getHolidayKey(family, subName);
+            const h = holidayData[key];
+            return (h && h.emoji) || defaultHolidayEmoji;
+        }
+
+        function showHolidayModal(family, subName) {
+            const key = getHolidayKey(family, subName);
+            const label = subName || family;
+            document.getElementById('holiday-modal-title').textContent = 'Holiday - ' + label;
+
+            const dateInput = document.getElementById('holiday-date-input');
+            const existing = holidayData[key];
+            if (existing && existing.until !== 'indefinite') {
+                dateInput.value = existing.until;
+            } else {
+                const d = new Date();
+                d.setDate(d.getDate() + 14);
+                dateInput.value = d.toISOString().split('T')[0];
+            }
+
+            // Build emoji picker
+            let selectedEmoji = (existing && existing.emoji) || defaultHolidayEmoji;
+            const pickerContainer = document.getElementById('holiday-emoji-picker');
+            pickerContainer.innerHTML = '';
+
+            function selectPickerEmoji(emoji, triggerBtn) {
+                selectedEmoji = emoji;
+                pickerContainer.querySelectorAll('.emoji-opt').forEach(b => b.style.borderColor = 'transparent');
+                if (triggerBtn) triggerBtn.style.borderColor = 'var(--primary-color)';
+            }
+
+            const isCustom = !holidayEmojiOptions.includes(selectedEmoji);
+
+            holidayEmojiOptions.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.className = 'emoji-opt';
+                btn.textContent = emoji;
+                btn.style.cssText = 'font-size:24px;padding:4px 6px;border-radius:8px;border:2px solid transparent;background:none;cursor:pointer;';
+                if (!isCustom && emoji === selectedEmoji) btn.style.borderColor = 'var(--primary-color)';
+                btn.addEventListener('click', () => {
+                    selectPickerEmoji(emoji, btn);
+                    // Reset custom input
+                    const ci = pickerContainer.querySelector('input.emoji-opt');
+                    if (ci) { ci.value = ''; ci.style.borderColor = 'transparent'; }
+                });
+                pickerContainer.appendChild(btn);
+            });
+
+            const customInput = document.createElement('input');
+            customInput.type = 'text';
+            customInput.className = 'emoji-opt';
+            customInput.placeholder = '+';
+            customInput.value = isCustom ? selectedEmoji : '';
+            customInput.style.cssText = 'width:42px;font-size:22px;text-align:center;padding:4px 2px;border-radius:8px;border:2px solid ' + (isCustom ? 'var(--primary-color)' : 'transparent') + ';background:var(--background-color);cursor:pointer;';
+            customInput.addEventListener('input', () => {
+                // Keep only last entered character/emoji
+                const val = customInput.value;
+                if (val.length > 2) {
+                    // Grab the last grapheme (emoji can be multi-codepoint)
+                    const segments = [...new Intl.Segmenter().segment(val)].map(s => s.segment);
+                    customInput.value = segments[segments.length - 1];
+                }
+                if (customInput.value.trim()) {
+                    selectedEmoji = customInput.value.trim();
+                    pickerContainer.querySelectorAll('.emoji-opt').forEach(b => b.style.borderColor = 'transparent');
+                    customInput.style.borderColor = 'var(--primary-color)';
+                }
+            });
+            customInput.addEventListener('focus', () => {
+                pickerContainer.querySelectorAll('.emoji-opt').forEach(b => b.style.borderColor = 'transparent');
+                customInput.style.borderColor = 'var(--primary-color)';
+            });
+            pickerContainer.appendChild(customInput);
+
+            document.getElementById('holiday-modal').style.display = 'flex';
+
+            // Wire up buttons
+            const setBtn = document.getElementById('holiday-set-btn');
+            const indefBtn = document.getElementById('holiday-indefinite-btn');
+            const clearBtn = document.getElementById('holiday-clear-btn');
+            const cancelBtn = document.getElementById('holiday-cancel-btn');
+
+            function cleanup() {
+                document.getElementById('holiday-modal').style.display = 'none';
+                setBtn.replaceWith(setBtn.cloneNode(true));
+                indefBtn.replaceWith(indefBtn.cloneNode(true));
+                clearBtn.replaceWith(clearBtn.cloneNode(true));
+                cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+            }
+
+            setBtn.onclick = () => {
+                if (dateInput.value) {
+                    holidayData[key] = { until: dateInput.value, emoji: selectedEmoji };
+                    applyHoliday(family, subName);
+                    cleanup();
+                    saveHolidaysToFirebase();
+                    updateDisplay();
+                }
+            };
+            indefBtn.onclick = () => {
+                holidayData[key] = { until: 'indefinite', emoji: selectedEmoji };
+                applyHoliday(family, subName);
+                cleanup();
+                saveHolidaysToFirebase();
+                updateDisplay();
+            };
+            clearBtn.onclick = () => {
+                delete holidayData[key];
+                cleanup();
+                saveHolidaysToFirebase();
+                updateDisplay();
+            };
+            cancelBtn.onclick = cleanup;
+            document.getElementById('holiday-modal').onclick = (e) => {
+                if (e.target === document.getElementById('holiday-modal')) cleanup();
+            };
+        }
+
+        function applyHoliday(family, subName) {
+            if (subName) {
+                // Apply to specific sub-member
+                const data = rsvpData[family];
+                if (data && data.members) {
+                    const sub = data.members.find(m => m.name === subName);
+                    if (sub) sub.status = 'not-coming';
+                    data.status = deriveParentStatus(data.members);
+                    syncMembersToGuests(family);
+                    if (data.status === 'not-coming') data.guests = 0;
+                }
+            } else {
+                // Apply to whole family
+                const data = rsvpData[family];
+                if (data) {
+                    data.status = 'not-coming';
+                    data.guests = 0;
+                    if (data.members) data.members.forEach(m => m.status = 'not-coming');
+                }
+            }
+            saveStateToFirebase();
+        }
+
+        function applyAllHolidays() {
+            Object.keys(holidayData).forEach(key => {
+                if (!isOnHoliday(key.split(':')[0], key.includes(':') ? key.split(':')[1] : null)) {
+                    delete holidayData[key]; // expired
+                    return;
+                }
+                const parts = key.split(':');
+                applyHoliday(parts[0], parts[1] || null);
+            });
+        }
+
+        async function saveHolidaysToFirebase() {
+            try {
+                await db.collection('holidays').doc('all').set(holidayData);
+            } catch (error) {
+                console.error('Failed to save holidays:', error);
+            }
+        }
+
+        async function loadHolidaysFromFirebase() {
+            try {
+                const doc = await db.collection('holidays').doc('all').get();
+                if (doc.exists) {
+                    holidayData = doc.data() || {};
+                }
+            } catch (error) {
+                console.error('Failed to load holidays:', error);
+            }
+        }
         
         // Initialize family member RSVPs
+        function initMembersArray(familyName) {
+            if (familySubMembers[familyName]) {
+                return familySubMembers[familyName].map(name => ({ name, status: 'pending' }));
+            }
+            return null;
+        }
+
         familyMembers.forEach(member => {
             const defaultCount = defaultGuestCounts[member] || 1;
-            rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount };
+            const members = initMembersArray(member);
+            rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount, members };
         });
         
         // Firebase Functions
@@ -429,11 +767,10 @@
                 console.error('Error code:', error.code);
                 console.error('Error message:', error.message);
                 
-                // Show user-friendly error
                 if (error.code === 'permission-denied') {
-                    alert('Unable to save: Permission denied. Please check Firebase security rules.');
+                    showToast('Unable to save: Permission denied');
                 } else if (error.code === 'unavailable') {
-                    alert('Unable to save: Connection to Firebase lost. Please check your internet connection.');
+                    showToast('Connection lost - changes will sync later');
                 }
             }
         }
@@ -484,11 +821,15 @@
                     familyMembers.forEach(member => {
                         const defaultCount = defaultGuestCounts[member] || 1;
                         if (!rsvpData[member]) {
-                            rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount };
+                            const members = initMembersArray(member);
+                            rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount, members };
                         } else {
-                            // Ensure previousGuests exists for existing data
                             if (rsvpData[member].previousGuests === undefined) {
                                 rsvpData[member].previousGuests = rsvpData[member].guests || defaultCount;
+                            }
+                            // Ensure members array exists for families that should have them
+                            if (familySubMembers[member] && !rsvpData[member].members) {
+                                rsvpData[member].members = initMembersArray(member);
                             }
                         }
                     });
@@ -527,11 +868,15 @@
                     familyMembers.forEach(member => {
                         const defaultCount = defaultGuestCounts[member] || 1;
                         if (!rsvpData[member]) {
-                            rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount };
+                            const members = initMembersArray(member);
+                            rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount, members };
                         } else {
-                            // Ensure previousGuests exists for existing data
                             if (rsvpData[member].previousGuests === undefined) {
                                 rsvpData[member].previousGuests = rsvpData[member].guests || defaultCount;
+                            }
+                            // Ensure members array exists for families that should have them
+                            if (familySubMembers[member] && !rsvpData[member].members) {
+                                rsvpData[member].members = initMembersArray(member);
                             }
                         }
                     });
@@ -621,119 +966,297 @@
             updateBringList();
         }
         
+        const debouncedSaveNotes = debounce(() => saveStateToFirebase(), 500);
         function updateMenuNotes(value) {
             menuNotes = value;
-            saveStateToFirebase();
+            debouncedSaveNotes();
         }
         
+        // Track which families are expanded
+        const expandedFamilies = new Set();
+
+        function buildRsvpBtn(status, onClick, labels) {
+            const btn = document.createElement('button');
+            const labelMap = labels || { coming: 'Coming', 'not-coming': 'Not Coming', pending: 'Not Sure' };
+            btn.className = 'rsvp-btn ' + status;
+            btn.textContent = labelMap[status] || 'Not Sure';
+            btn.addEventListener('click', onClick);
+            return btn;
+        }
+
+        const subMemberLabels = { coming: 'Coming', 'not-coming': 'Not Coming', pending: 'Not Sure' };
+
+        function renderSubMembers(member, memberData) {
+            const container = document.createElement('div');
+            container.className = 'sub-members-list';
+            if (!memberData.members) return container;
+
+            memberData.members.forEach((sub, subIdx) => {
+                const row = document.createElement('div');
+                row.className = 'sub-member-row';
+
+                const name = document.createElement('span');
+                name.className = 'sub-member-name';
+                name.textContent = sub.name;
+
+                const subOnHol = isOnHoliday(member, sub.name);
+                const holBtn = document.createElement('button');
+                holBtn.className = 'sub-member-holiday' + (subOnHol ? ' on-holiday' : '');
+                holBtn.textContent = getHolidayEmoji(member, sub.name);
+                holBtn.title = subOnHol ? getHolidayLabel(member, sub.name) : 'Set holiday';
+                holBtn.addEventListener('click', () => showHolidayModal(member, sub.name));
+
+                const st = sub.status || 'pending';
+                const toggle = document.createElement('button');
+                toggle.className = 'sub-member-toggle ' + st;
+                toggle.textContent = subMemberLabels[st];
+                toggle.addEventListener('click', () => toggleSubMember(member, subIdx));
+
+                const subPlaceholder = document.createElement('span');
+
+                row.appendChild(name);
+                row.appendChild(holBtn);
+                row.appendChild(subPlaceholder);
+                row.appendChild(toggle);
+                container.appendChild(row);
+            });
+
+            // Add member button
+            const addRow = document.createElement('div');
+            addRow.className = 'sub-member-row sub-member-add';
+            const addBtn = document.createElement('button');
+            addBtn.className = 'sub-member-add-btn';
+            addBtn.textContent = '+ Add person';
+            addBtn.addEventListener('click', () => addSubMember(member));
+            addRow.appendChild(addBtn);
+            container.appendChild(addRow);
+
+            return container;
+        }
+
         function updateRSVPList() {
             const rsvpContainer = document.getElementById('rsvp-list');
             rsvpContainer.innerHTML = '';
-            
+
             // Display family members
             familyMembers.forEach(member => {
                 const memberData = rsvpData[member];
+                const wrapper = document.createElement('div');
+                wrapper.className = 'rsvp-family-wrapper';
+
                 const rsvpRow = document.createElement('div');
                 rsvpRow.className = 'rsvp-grid';
-                
-                // Create dropdown options
-                let dropdownOptions = '';
-                for (let i = 0; i <= 9; i++) {
-                    dropdownOptions += `<option value="${i}" ${memberData.guests === i ? 'selected' : ''}>${i}</option>`;
+
+                // Family name with expand arrow
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'family-member';
+                const hasMembers = memberData.members && memberData.members.length > 0;
+                const isExpanded = expandedFamilies.has(member);
+
+                if (hasMembers) {
+                    const arrow = document.createElement('span');
+                    arrow.className = 'expand-arrow' + (isExpanded ? ' expanded' : '');
+                    arrow.textContent = '\u25B6';
+                    nameDiv.appendChild(arrow);
                 }
-                
-                rsvpRow.innerHTML = `
-                    <div class="family-member">${member}</div>
-                    <select class="guest-count" 
-                            onchange="updateGuestCount('${member}', this.value)"
-                            ${memberData.status === 'not-coming' ? 'disabled' : ''}>
-                        ${dropdownOptions}
-                    </select>
-                    <button class="rsvp-btn ${memberData.status}" 
-                            onclick="toggleRSVP('${member}')">
-                        ${memberData.status === 'coming' ? 'Coming' : 
-                          memberData.status === 'not-coming' ? 'Not Coming' : 'Not Sure'}
-                    </button>
-                `;
-                
-                rsvpContainer.appendChild(rsvpRow);
+                const nameText = document.createTextNode(member);
+                nameDiv.appendChild(nameText);
+                if (hasMembers) {
+                    nameDiv.style.cursor = 'pointer';
+                    nameDiv.addEventListener('click', () => {
+                        if (expandedFamilies.has(member)) expandedFamilies.delete(member);
+                        else expandedFamilies.add(member);
+                        updateRSVPList();
+                    });
+                }
+
+                const holidayBtn = document.createElement('button');
+                const onHol = isOnHoliday(member);
+                holidayBtn.className = 'holiday-btn' + (onHol ? ' on-holiday' : '');
+                holidayBtn.textContent = getHolidayEmoji(member);
+                holidayBtn.title = onHol ? getHolidayLabel(member) : 'Set holiday';
+                holidayBtn.addEventListener('click', (e) => { e.stopPropagation(); showHolidayModal(member); });
+
+                const countSpan = document.createElement('span');
+                countSpan.className = 'guest-count-num';
+                countSpan.textContent = memberData.guests || 0;
+
+                const btn = buildRsvpBtn(memberData.status, () => toggleRSVP(member));
+
+                rsvpRow.appendChild(nameDiv);
+                rsvpRow.appendChild(holidayBtn);
+                rsvpRow.appendChild(countSpan);
+                rsvpRow.appendChild(btn);
+                wrapper.appendChild(rsvpRow);
+
+                // Sub-members (expanded)
+                if (hasMembers && isExpanded) {
+                    wrapper.appendChild(renderSubMembers(member, memberData));
+                }
+
+                rsvpContainer.appendChild(wrapper);
             });
-            
+
             // Display additional guests
             additionalGuests.forEach((guest, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'rsvp-family-wrapper';
+
                 const rsvpRow = document.createElement('div');
                 rsvpRow.className = 'rsvp-grid';
-                
-                // Create dropdown options for guest
-                let guestDropdownOptions = '';
-                for (let i = 0; i <= 9; i++) {
-                    guestDropdownOptions += `<option value="${i}" ${(guest.guests || 1) === i ? 'selected' : ''}>${i}</option>`;
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'family-member guest-row';
+                const hasMembers = guest.members && guest.members.length > 0;
+                const isExpanded = expandedFamilies.has('guest-' + index);
+
+                if (hasMembers) {
+                    const arrow = document.createElement('span');
+                    arrow.className = 'expand-arrow' + (isExpanded ? ' expanded' : '');
+                    arrow.textContent = '\u25B6';
+                    nameDiv.appendChild(arrow);
                 }
-                
-                rsvpRow.innerHTML = `
-                    <div class="family-member guest-row">
-                        ${guest.name}
-                        <span class="guest-label">(guest)</span>
-                        <button onclick="removeAdditionalGuest(${index})" class="remove-guest-btn">×</button>
-                    </div>
-                    <select class="guest-count" 
-                            onchange="updateAdditionalGuestCount(${index}, this.value)"
-                            ${guest.status !== 'coming' ? 'disabled' : ''}>
-                        ${guestDropdownOptions}
-                    </select>
-                    <button class="rsvp-btn ${guest.status}" 
-                            onclick="toggleAdditionalGuestStatus(${index})">
-                        ${guest.status === 'coming' ? 'Coming' : 'Not Coming'}
-                    </button>
-                `;
-                
-                rsvpContainer.appendChild(rsvpRow);
+
+                const nameText = document.createTextNode(guest.name);
+                nameDiv.appendChild(nameText);
+
+                const label = document.createElement('span');
+                label.className = 'guest-label';
+                label.textContent = '(guest)';
+                nameDiv.appendChild(label);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-guest-btn';
+                removeBtn.textContent = '\u00D7';
+                removeBtn.addEventListener('click', (e) => { e.stopPropagation(); removeAdditionalGuest(index); });
+                nameDiv.appendChild(removeBtn);
+
+                if (hasMembers) {
+                    nameDiv.style.cursor = 'pointer';
+                    nameDiv.addEventListener('click', () => {
+                        const key = 'guest-' + index;
+                        if (expandedFamilies.has(key)) expandedFamilies.delete(key);
+                        else expandedFamilies.add(key);
+                        updateRSVPList();
+                    });
+                }
+
+                const holPlaceholder = document.createElement('span');
+
+                const guestCountSpan = document.createElement('span');
+                guestCountSpan.className = 'guest-count-num';
+                guestCountSpan.textContent = guest.guests || 0;
+
+                const btn = buildRsvpBtn(
+                    guest.status || 'pending',
+                    () => toggleAdditionalGuestStatus(index)
+                );
+
+                rsvpRow.appendChild(nameDiv);
+                rsvpRow.appendChild(holPlaceholder);
+                rsvpRow.appendChild(guestCountSpan);
+                rsvpRow.appendChild(btn);
+                wrapper.appendChild(rsvpRow);
+
+                // Sub-members for additional guests
+                if (hasMembers && isExpanded) {
+                    wrapper.appendChild(renderSubMembersForGuest(index, guest));
+                }
+
+                rsvpContainer.appendChild(wrapper);
             });
-            
+
             // Add "Add Guests" button at the bottom
-            const addGuestsBtn = document.createElement('div');
-            addGuestsBtn.className = 'add-guests-container';
-            addGuestsBtn.innerHTML = `
-                <button class="edit-btn add-guests-btn" onclick="showAddGuestsModal()">
-                    ➕ Add Guests
-                </button>
-            `;
-            rsvpContainer.appendChild(addGuestsBtn);
+            const addGuestsDiv = document.createElement('div');
+            addGuestsDiv.className = 'add-guests-container';
+            const addBtn = document.createElement('button');
+            addBtn.className = 'edit-btn add-guests-btn';
+            addBtn.textContent = '+ Add Guests';
+            addBtn.addEventListener('click', showAddGuestsModal);
+            addGuestsDiv.appendChild(addBtn);
+            rsvpContainer.appendChild(addGuestsDiv);
         }
         
+        function syncMembersToGuests(member) {
+            const data = rsvpData[member];
+            if (data.members && data.members.length > 0) {
+                data.guests = data.members.filter(m => m.status === 'coming').length;
+                data.previousGuests = data.members.length;
+            }
+        }
+
+        function deriveParentStatus(members) {
+            const allNotComing = members.every(m => m.status === 'not-coming');
+            if (allNotComing) return 'not-coming';
+            if (members.some(m => m.status === 'coming')) return 'coming';
+            return 'pending';
+        }
+
         function toggleRSVP(member) {
             const current = rsvpData[member].status;
             const defaultCount = defaultGuestCounts[member] || 1;
-            
+            let newStatus;
+
             if (current === 'pending') {
-                rsvpData[member].status = 'coming';
-                // Restore previous guest count when switching to coming
-                rsvpData[member].guests = rsvpData[member].previousGuests || defaultCount;
+                newStatus = 'coming';
             } else if (current === 'coming') {
-                // Store current guest count before switching to not-coming
-                rsvpData[member].previousGuests = rsvpData[member].guests;
-                rsvpData[member].status = 'not-coming';
-                rsvpData[member].guests = 0;
+                newStatus = 'not-coming';
             } else {
-                rsvpData[member].status = 'pending';
+                newStatus = 'pending';
+            }
+
+            rsvpData[member].status = newStatus;
+
+            if (rsvpData[member].members) {
+                rsvpData[member].members.forEach(m => m.status = newStatus);
+                syncMembersToGuests(member);
+            }
+
+            if (newStatus === 'not-coming') {
+                rsvpData[member].previousGuests = rsvpData[member].guests || defaultCount;
+                rsvpData[member].guests = 0;
+            } else if (newStatus === 'coming') {
+                if (rsvpData[member].members) {
+                    syncMembersToGuests(member);
+                } else {
+                    rsvpData[member].guests = rsvpData[member].previousGuests || defaultCount;
+                }
+            } else {
                 rsvpData[member].guests = rsvpData[member].previousGuests || defaultCount;
             }
-            
+
             updateDisplay();
             saveStateToFirebase();
         }
-        
-        function updateGuestCount(member, count) {
-            const newCount = parseInt(count) || 1;
-            rsvpData[member].guests = newCount;
-            // Store as previous count for when they switch status
-            if (rsvpData[member].status === 'coming') {
-                rsvpData[member].previousGuests = newCount;
-            }
-            updateGuestSummary();
+
+        function toggleSubMember(member, subIdx) {
+            const data = rsvpData[member];
+            const current = data.members[subIdx].status;
+            if (current === 'pending') data.members[subIdx].status = 'coming';
+            else if (current === 'coming') data.members[subIdx].status = 'not-coming';
+            else data.members[subIdx].status = 'pending';
+
+            data.status = deriveParentStatus(data.members);
+            syncMembersToGuests(member);
+            if (data.status === 'not-coming') data.guests = 0;
+
+            updateDisplay();
             saveStateToFirebase();
         }
-        
+
+        async function addSubMember(member) {
+            const name = await showPrompt('Add person to ' + member, '');
+            if (name) {
+                const d = rsvpData[member];
+                if (!d.members) d.members = [];
+                d.members.push({ name, status: d.status || 'pending' });
+                d.status = deriveParentStatus(d.members);
+                syncMembersToGuests(member);
+                updateDisplay();
+                saveStateToFirebase();
+            }
+        }
+
         function updateGuestSummary() {
             const familyGuests = familyMembers
                 .filter(member => rsvpData[member].status === 'coming')
@@ -762,9 +1285,8 @@
         function updateBringList() {
             const bringContainer = document.getElementById('bring-list');
             bringContainer.innerHTML = '';
-            
+
             if (bringItems.length === 0) {
-                // Show "Add Items" button when list is empty
                 bringContainer.innerHTML = `
                     <div class="empty-state">
                         <p>No items added yet</p>
@@ -778,15 +1300,19 @@
                     const itemData = bringData[item];
                     const itemRow = document.createElement('div');
                     itemRow.className = 'bring-item';
-                    
-                    itemRow.innerHTML = `
-                        <div class="item-name" onclick="editItemName('${item}')">${item}</div>
-                        <div class="item-status ${itemData.assigned ? 'item-covered' : 'item-needed'}"
-                             onclick="claimItem('${item}')">
-                            ${itemData.assigned ? `✓ ${itemData.person}` : 'Tap to claim'}
-                        </div>
-                    `;
-                    
+
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'item-name';
+                    nameDiv.textContent = item;
+                    nameDiv.addEventListener('click', () => editItemName(item));
+
+                    const statusDiv = document.createElement('div');
+                    statusDiv.className = 'item-status ' + (itemData.assigned ? 'item-covered' : 'item-needed');
+                    statusDiv.textContent = itemData.assigned ? ('✓ ' + itemData.person) : 'Tap to claim';
+                    statusDiv.addEventListener('click', () => claimItem(item));
+
+                    itemRow.appendChild(nameDiv);
+                    itemRow.appendChild(statusDiv);
                     bringContainer.appendChild(itemRow);
                 });
             }
@@ -826,20 +1352,28 @@
         function updateEditList() {
             const editList = document.getElementById('edit-list');
             editList.innerHTML = '';
-            
+
             bringItems.forEach(item => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'edit-item';
-                itemDiv.innerHTML = `
-                    <span>${item}</span>
-                    <button class="remove-btn" onclick="removeItem('${item}')">Remove</button>
-                `;
+
+                const span = document.createElement('span');
+                span.textContent = item;
+
+                const btn = document.createElement('button');
+                btn.className = 'remove-btn';
+                btn.textContent = 'Remove';
+                btn.addEventListener('click', () => removeItem(item));
+
+                itemDiv.appendChild(span);
+                itemDiv.appendChild(btn);
                 editList.appendChild(itemDiv);
             });
         }
         
-        function removeItem(item) {
-            if (confirm(`Remove "${item}" from the list?`)) {
+        async function removeItem(item) {
+            const yes = await showConfirm('Remove Item', `Remove "${item}" from the list?`);
+            if (yes) {
                 bringItems = bringItems.filter(i => i !== item);
                 delete bringData[item];
                 updateEditList();
@@ -1001,89 +1535,177 @@
         
         function showAddGuestsModal() {
             document.getElementById('guest-name-input').value = '';
+            document.getElementById('guest-members-input').value = '';
             document.getElementById('guest-name-input').focus();
             document.getElementById('guests-modal').style.display = 'flex';
         }
-        
+
         function closeGuestsModal() {
             document.getElementById('guests-modal').style.display = 'none';
         }
-        
+
         function addGuest() {
-            const input = document.getElementById('guest-name-input');
-            const guestName = input.value.trim();
-            if (guestName) {
-                additionalGuests.push({ name: guestName, status: 'coming', guests: 1, previousGuests: 1 });
-                input.value = '';
-                closeGuestsModal();
+            const nameInput = document.getElementById('guest-name-input');
+            const membersInput = document.getElementById('guest-members-input');
+            const guestName = nameInput.value.trim();
+            if (!guestName) return;
+
+            const membersText = membersInput.value.trim();
+            let members = null;
+            let guestCount = 1;
+
+            if (membersText) {
+                members = membersText.split(',').map(n => n.trim()).filter(Boolean).map(name => ({ name, status: 'coming' }));
+                guestCount = members.length;
+            }
+
+            additionalGuests.push({
+                name: guestName,
+                status: 'coming',
+                guests: guestCount,
+                previousGuests: guestCount,
+                members
+            });
+
+            nameInput.value = '';
+            membersInput.value = '';
+            closeGuestsModal();
+
+            // Auto-expand if has members
+            if (members && members.length > 0) {
+                expandedFamilies.add('guest-' + (additionalGuests.length - 1));
+            }
+
+            updateRSVPList();
+            updateGuestSummary();
+            saveStateToFirebase();
+        }
+
+        function toggleAdditionalGuestStatus(index) {
+            const guest = additionalGuests[index];
+            let newStatus;
+
+            if (guest.status === 'pending' || !guest.status) newStatus = 'coming';
+            else if (guest.status === 'coming') newStatus = 'not-coming';
+            else newStatus = 'pending';
+
+            guest.status = newStatus;
+            if (guest.members) {
+                guest.members.forEach(m => m.status = newStatus);
+                guest.guests = guest.members.filter(m => m.status === 'coming').length;
+            } else if (newStatus === 'not-coming') {
+                guest.previousGuests = guest.guests || 1;
+                guest.guests = 0;
+            } else {
+                guest.guests = guest.previousGuests || 1;
+            }
+
+            if (newStatus === 'not-coming') guest.guests = 0;
+
+            updateRSVPList();
+            updateGuestSummary();
+            saveStateToFirebase();
+        }
+
+        function toggleAdditionalGuestSubMember(guestIdx, subIdx) {
+            const guest = additionalGuests[guestIdx];
+            const current = guest.members[subIdx].status;
+            if (current === 'pending') guest.members[subIdx].status = 'coming';
+            else if (current === 'coming') guest.members[subIdx].status = 'not-coming';
+            else guest.members[subIdx].status = 'pending';
+
+            guest.status = deriveParentStatus(guest.members);
+            guest.guests = guest.members.filter(m => m.status === 'coming').length;
+            if (guest.status === 'not-coming') guest.guests = 0;
+
+            updateRSVPList();
+            updateGuestSummary();
+            saveStateToFirebase();
+        }
+
+        async function addSubMemberToGuest(guestIdx) {
+            const name = await showPrompt('Add person to ' + additionalGuests[guestIdx].name, '');
+            if (name) {
+                const guest = additionalGuests[guestIdx];
+                if (!guest.members) guest.members = [];
+                guest.members.push({ name, status: guest.status || 'pending' });
+                guest.status = deriveParentStatus(guest.members);
+                guest.guests = guest.members.filter(m => m.status === 'coming').length;
                 updateRSVPList();
                 updateGuestSummary();
                 saveStateToFirebase();
             }
         }
-        
-        
-        function toggleAdditionalGuestStatus(index) {
-            const guest = additionalGuests[index];
-            
-            if (guest.status === 'coming') {
-                // Store current guest count before switching to not-coming
-                guest.previousGuests = guest.guests;
-                guest.status = 'not-coming';
-                guest.guests = 0;
-            } else {
-                guest.status = 'coming';
-                // Restore previous guest count when switching to coming
-                guest.guests = guest.previousGuests || 1;
-            }
-            
-            updateRSVPList();
-            updateGuestSummary();
-            saveStateToFirebase();
+
+        function renderSubMembersForGuest(guestIdx, guest) {
+            const container = document.createElement('div');
+            container.className = 'sub-members-list';
+            if (!guest.members) return container;
+
+            guest.members.forEach((sub, subIdx) => {
+                const row = document.createElement('div');
+                row.className = 'sub-member-row';
+
+                const name = document.createElement('span');
+                name.className = 'sub-member-name';
+                name.textContent = sub.name;
+
+                // Placeholder for holiday column (guests don't have holidays)
+                const holPlaceholder = document.createElement('span');
+                const countPlaceholder = document.createElement('span');
+
+                const st = sub.status || 'pending';
+                const toggle = document.createElement('button');
+                toggle.className = 'sub-member-toggle ' + st;
+                toggle.textContent = subMemberLabels[st];
+                toggle.addEventListener('click', () => toggleAdditionalGuestSubMember(guestIdx, subIdx));
+
+                row.appendChild(name);
+                row.appendChild(holPlaceholder);
+                row.appendChild(countPlaceholder);
+                row.appendChild(toggle);
+                container.appendChild(row);
+            });
+
+            const addRow = document.createElement('div');
+            addRow.className = 'sub-member-row sub-member-add';
+            const addBtn = document.createElement('button');
+            addBtn.className = 'sub-member-add-btn';
+            addBtn.textContent = '+ Add person';
+            addBtn.addEventListener('click', () => addSubMemberToGuest(guestIdx));
+            addRow.appendChild(addBtn);
+            container.appendChild(addRow);
+
+            return container;
         }
-        
-        function removeAdditionalGuest(index) {
-            if (confirm('Remove this guest?')) {
+
+        async function removeAdditionalGuest(index) {
+            const yes = await showConfirm('Remove Guest', 'Remove this guest?');
+            if (yes) {
                 additionalGuests.splice(index, 1);
                 updateRSVPList();
                 updateGuestSummary();
                 saveStateToFirebase();
             }
         }
+
         
-        function updateAdditionalGuestCount(index, count) {
-            const newCount = parseInt(count) || 1;
-            additionalGuests[index].guests = newCount;
-            // Store as previous count for when they switch status
-            if (additionalGuests[index].status === 'coming') {
-                additionalGuests[index].previousGuests = newCount;
-            }
-            updateGuestSummary();
-            saveStateToFirebase();
-        }
-        
-        function editItemName(oldName) {
-            const newName = prompt(`Edit item name:`, oldName);
-            if (newName && newName.trim() && newName !== oldName) {
-                const trimmedName = newName.trim();
-                
-                // Check if new name already exists
-                if (bringItems.includes(trimmedName)) {
-                    alert('An item with this name already exists!');
+        async function editItemName(oldName) {
+            const newName = await showPrompt('Edit item name', oldName);
+            if (newName && newName !== oldName) {
+                if (bringItems.includes(newName)) {
+                    showToast('An item with this name already exists');
                     return;
                 }
-                
-                // Update the item name in bringItems array
+
                 const index = bringItems.indexOf(oldName);
                 if (index > -1) {
-                    bringItems[index] = trimmedName;
+                    bringItems[index] = newName;
                 }
-                
-                // Move the data from old key to new key
-                bringData[trimmedName] = bringData[oldName];
+
+                bringData[newName] = bringData[oldName];
                 delete bringData[oldName];
-                
-                // Update the display and save
+
                 updateBringList();
                 saveStateToFirebase();
             }
@@ -1140,12 +1762,17 @@
             
             message += `\n🔗 RSVP: ${baseURL}`;
             
-            // Copy to clipboard
-            navigator.clipboard.writeText(message).then(() => {
-                alert('📱 Update copied to clipboard!');
-            }).catch(() => {
-                alert('Summary ready:\n\n' + message);
-            });
+            // Use Web Share API on mobile, fallback to clipboard
+            if (navigator.share) {
+                navigator.share({ text: message }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(message).then(() => {
+                    showToast('Update copied to clipboard!');
+                }).catch(() => {
+                    showToast('Update ready - copy from console');
+                    console.log(message);
+                });
+            }
         }
         
         // Initialize the app
@@ -1155,14 +1782,16 @@
             // Load state from Firebase
             await loadStateFromFirebase();
             
-            // Load favourites from Firebase
+            // Load favourites and holidays from Firebase
             await loadFavouritesFromFirebase();
-            
+            await loadHolidaysFromFirebase();
+
             // Set up real-time sync
             setupRealtimeSync();
-            
+
             // Initialize and display
             initializeBringData();
+            applyAllHolidays();
             updateDisplay();
             
             // Check if we need to auto-archive after loading from Firebase
@@ -1254,15 +1883,17 @@
             // Reset all RSVP data to default state
             familyMembers.forEach(member => {
                 const defaultCount = defaultGuestCounts[member] || 1;
-                rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount };
+                const members = initMembersArray(member);
+                rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount, members };
             });
-            
+
             // Clear all menu items and data
             bringItems = [];
             bringData = {};
-            
+
             // Clear additional guests
             additionalGuests = [];
+            expandedFamilies.clear();
             
             // Clear menu notes
             menuNotes = '';
@@ -1417,7 +2048,8 @@
                     
                     rsvpRow.innerHTML = `
                         <div class="family-member">${member}</div>
-                        <div class="guest-count-display">${data.rsvpData[member].guests}</div>
+                        <span></span>
+                        <span class="guest-count-num">${data.rsvpData[member].guests}</span>
                         <div class="rsvp-status coming">Came</div>
                     `;
                     
@@ -1437,7 +2069,8 @@
                                 ${guest.name}
                                 <span class="guest-label">(guest)</span>
                             </div>
-                            <div class="guest-count-display">${guest.guests || 1}</div>
+                            <span></span>
+                            <span class="guest-count-num">${guest.guests || 1}</span>
                             <div class="rsvp-status coming">Came</div>
                         `;
                         
@@ -1454,12 +2087,14 @@
             if (data.menuNotes && data.menuNotes.trim() !== '') {
                 const notesDiv = document.createElement('div');
                 notesDiv.className = 'menu-notes-section';
-                notesDiv.innerHTML = `
-                    <label class="notes-label">Menu Notes:</label>
-                    <div style="padding: 10px; background: var(--background); border-radius: 8px; white-space: pre-wrap;">
-                        ${data.menuNotes}
-                    </div>
-                `;
+                const label = document.createElement('label');
+                label.className = 'notes-label';
+                label.textContent = 'Menu Notes:';
+                const notesBody = document.createElement('div');
+                notesBody.style.cssText = 'padding: 10px; background: var(--background-color); border-radius: 8px; white-space: pre-wrap;';
+                notesBody.textContent = data.menuNotes;
+                notesDiv.appendChild(label);
+                notesDiv.appendChild(notesBody);
                 menuContainer.appendChild(notesDiv);
             }
             
@@ -1468,18 +2103,24 @@
                     if (data.bringData[item] && data.bringData[item].assigned) {
                         const itemRow = document.createElement('div');
                         itemRow.className = 'bring-item';
-                        
+
+                        const nameDiv = document.createElement('div');
+                        nameDiv.className = 'item-name';
+                        nameDiv.textContent = item;
+
+                        const statusDiv = document.createElement('div');
+                        statusDiv.className = 'item-status item-covered';
+                        statusDiv.textContent = '✓ ' + data.bringData[item].person;
+
                         const favouriteCount = favouritesData[item] ? favouritesData[item].length : 0;
-                        const favouriteButtonText = favouriteCount > 0 ? `⭐ Favourited (${favouriteCount})` : '⭐ Favourite';
-                        
-                        itemRow.innerHTML = `
-                            <div class="item-name">${item}</div>
-                            <div class="item-status item-covered">✓ ${data.bringData[item].person}</div>
-                            <button class="favourite-btn" onclick="showNameInputModal('${item}', '${data.date}')">
-                                ${favouriteButtonText}
-                            </button>
-                        `;
-                        
+                        const favBtn = document.createElement('button');
+                        favBtn.className = 'favourite-btn';
+                        favBtn.textContent = favouriteCount > 0 ? ('Favourited (' + favouriteCount + ')') : 'Favourite';
+                        favBtn.addEventListener('click', () => showNameInputModal(item, data.date));
+
+                        itemRow.appendChild(nameDiv);
+                        itemRow.appendChild(statusDiv);
+                        itemRow.appendChild(favBtn);
                         menuContainer.appendChild(itemRow);
                     }
                 });
@@ -1682,21 +2323,31 @@
             sortedItems.forEach(([item, favourites]) => {
                 const itemRow = document.createElement('div');
                 itemRow.className = 'bring-item';
-                
-                // Get the most recent event for this item
+
                 const sourceEvent = favourites[favourites.length - 1].event;
-                
-                itemRow.innerHTML = `
-                    <div class="item-name">${item}</div>
-                    <div class="item-status item-covered">From: ${sourceEvent}</div>
-                    <button class="favourite-count-btn" onclick="showWhoFavouritedModal('${item}')">
-                        ${favourites.length} ${favourites.length === 1 ? 'favourite' : 'favourites'}
-                    </button>
-                    <button class="favourite-btn" onclick="showNameInputModal('${item}', '${sourceEvent}')">
-                        ⭐ Favourite
-                    </button>
-                `;
-                
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'item-name';
+                nameDiv.textContent = item;
+
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'item-status item-covered';
+                statusDiv.textContent = 'From: ' + sourceEvent;
+
+                const countBtn = document.createElement('button');
+                countBtn.className = 'favourite-count-btn';
+                countBtn.textContent = favourites.length + (favourites.length === 1 ? ' favourite' : ' favourites');
+                countBtn.addEventListener('click', () => showWhoFavouritedModal(item));
+
+                const favBtn = document.createElement('button');
+                favBtn.className = 'favourite-btn';
+                favBtn.textContent = 'Favourite';
+                favBtn.addEventListener('click', () => showNameInputModal(item, sourceEvent));
+
+                itemRow.appendChild(nameDiv);
+                itemRow.appendChild(statusDiv);
+                itemRow.appendChild(countBtn);
+                itemRow.appendChild(favBtn);
                 favouritesContainer.appendChild(itemRow);
             });
         }
