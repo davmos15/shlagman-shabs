@@ -1208,14 +1208,20 @@
             rsvpData[member].status = newStatus;
 
             if (rsvpData[member].members) {
-                rsvpData[member].members.forEach(m => m.status = newStatus);
+                rsvpData[member].members.forEach(m => {
+                    // Don't override status for individuals who are on holiday
+                    if (newStatus !== 'not-coming' && isOnHoliday(member, m.name)) return;
+                    m.status = newStatus;
+                });
+                // Re-derive parent status in case some members stayed not-coming due to holiday
+                rsvpData[member].status = deriveParentStatus(rsvpData[member].members);
                 syncMembersToGuests(member);
             }
 
-            if (newStatus === 'not-coming') {
+            if (rsvpData[member].status === 'not-coming') {
                 rsvpData[member].previousGuests = rsvpData[member].guests || defaultCount;
                 rsvpData[member].guests = 0;
-            } else if (newStatus === 'coming') {
+            } else if (rsvpData[member].status === 'coming') {
                 if (rsvpData[member].members) {
                     syncMembersToGuests(member);
                 } else {
