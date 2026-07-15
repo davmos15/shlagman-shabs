@@ -324,6 +324,54 @@ body {
     text-decoration: underline;
 }
 
+/* Editable sub-member name */
+.sub-member-name.editable {
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+}
+
+.sub-member-name.editable:hover {
+    border-bottom-color: var(--border-color);
+}
+
+/* Remove sub-member (× in the narrow column of the sub-member row) */
+.sub-member-remove {
+    background: none;
+    border: none;
+    color: var(--warning-color);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    text-align: center;
+    opacity: 0.6;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sub-member-remove:hover {
+    opacity: 1;
+}
+
+/* Rename pencil on family / guest rows */
+.edit-name-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 2px 4px;
+    margin-left: 4px;
+    border-radius: 4px;
+    opacity: 0.6;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.edit-name-btn:hover {
+    opacity: 1;
+    color: var(--primary-color);
+}
+
 /* RSVP Grid */
 .rsvp-grid {
     display: grid;
@@ -953,6 +1001,70 @@ textarea:focus {
 .new-item-input,
 .date-input {
     margin: 12px 0;
+}
+
+/* Add Guests modal */
+.guest-field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    margin-bottom: 2px;
+    text-align: left;
+}
+
+#guest-members-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 6px 0;
+}
+
+.guest-member-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guest-member-row .guest-member-input {
+    margin: 0;
+    flex: 1;
+}
+
+.guest-member-remove {
+    background: none;
+    border: none;
+    color: var(--warning-color);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 6px;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.guest-member-remove:hover {
+    color: #c53030;
+}
+
+.add-member-row-btn {
+    display: inline-block;
+    background: none;
+    border: 1px dashed var(--primary-color);
+    color: var(--primary-color);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 14px;
+    border-radius: var(--border-radius);
+    margin: 6px 0 4px;
+    width: 100%;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.add-member-row-btn:hover {
+    background: rgba(66, 153, 225, 0.08);
 }
 
 /* History View */

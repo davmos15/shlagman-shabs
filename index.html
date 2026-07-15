@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Shlagman Shabs Plan</title>
-    
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    <meta name="theme-color" content="#4299e1">
+
     <!-- Firebase Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-firestore-compat.min.js"></script>
@@ -282,14 +287,17 @@
     <!-- Add Guests Modal -->
     <div class="modal" id="guests-modal">
         <div class="modal-content">
-            <h3>Add Additional Guests</h3>
-            <input type="text" id="guest-name-input" placeholder="Family or guest name..."
+            <h3>Add Guests</h3>
+            <label class="guest-field-label">Family name</label>
+            <input type="text" id="guest-name-input" placeholder="e.g. Kahlberg"
                    class="guest-input">
-            <input type="text" id="guest-members-input" placeholder="Individual names (comma separated, optional)..."
-                   class="guest-input"
-                   onkeypress="if(event.key==='Enter') addGuest()">
+            <label class="guest-field-label">Family members</label>
+            <div id="guest-members-container"></div>
+            <button class="add-member-row-btn" id="add-guest-member-btn" onclick="addGuestMemberRow()">
+                + Add family member
+            </button>
             <div class="modal-buttons">
-                <button class="modal-btn primary" onclick="addGuest()">Add Guest</button>
+                <button class="modal-btn primary" onclick="addGuest()">Add</button>
                 <button class="modal-btn secondary" onclick="closeGuestsModal()">Cancel</button>
             </div>
         </div>
@@ -480,7 +488,9 @@
         }
 
         // Family members from the WhatsApp group (alphabetical order)
-        const familyMembers = [
+        // This is the default/seed list. The live list can be edited by users and
+        // is persisted in Firebase (see loadStateFromFirebase / saveStateToFirebase).
+        let familyMembers = [
             'Adi & Gabe', 'Begleiter', 'Bobba', 'Gilla',
             'Meyerowitz', 'Mosberg', 'Moskow 29b', 'Moskow 5/66', 'PB'
         ];
@@ -756,6 +766,7 @@
                     bringItems,
                     additionalGuests,
                     menuNotes,
+                    familyMembers,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
@@ -816,7 +827,10 @@
                     if (data.bringItems) bringItems = data.bringItems;
                     if (data.additionalGuests) additionalGuests = data.additionalGuests;
                     if (data.menuNotes) menuNotes = data.menuNotes;
-                    
+                    if (data.familyMembers && Array.isArray(data.familyMembers) && data.familyMembers.length) {
+                        familyMembers = data.familyMembers;
+                    }
+
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
                         const defaultCount = defaultGuestCounts[member] || 1;
@@ -833,7 +847,7 @@
                             }
                         }
                     });
-                    
+
                     initializeBringData();
                     updateDisplay();
                     console.log("✅ State loaded and display updated");
@@ -863,7 +877,10 @@
                     if (data.bringItems) bringItems = data.bringItems;
                     if (data.additionalGuests) additionalGuests = data.additionalGuests;
                     if (data.menuNotes) menuNotes = data.menuNotes;
-                    
+                    if (data.familyMembers && Array.isArray(data.familyMembers) && data.familyMembers.length) {
+                        familyMembers = data.familyMembers;
+                    }
+
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
                         const defaultCount = defaultGuestCounts[member] || 1;
@@ -880,7 +897,7 @@
                             }
                         }
                     });
-                    
+
                     initializeBringData();
                     updateDisplay();
                     // updateSyncStatus('online');
@@ -989,15 +1006,17 @@
         function renderSubMembers(member, memberData) {
             const container = document.createElement('div');
             container.className = 'sub-members-list';
-            if (!memberData.members) return container;
 
-            memberData.members.forEach((sub, subIdx) => {
+            const members = memberData.members || [];
+            members.forEach((sub, subIdx) => {
                 const row = document.createElement('div');
                 row.className = 'sub-member-row';
 
                 const name = document.createElement('span');
-                name.className = 'sub-member-name';
+                name.className = 'sub-member-name editable';
                 name.textContent = sub.name;
+                name.title = 'Tap to rename';
+                name.addEventListener('click', () => editSubMember(member, subIdx));
 
                 const subOnHol = isOnHoliday(member, sub.name);
                 const holBtn = document.createElement('button');
@@ -1006,17 +1025,21 @@
                 holBtn.title = subOnHol ? getHolidayLabel(member, sub.name) : 'Set holiday';
                 holBtn.addEventListener('click', () => showHolidayModal(member, sub.name));
 
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'sub-member-remove';
+                removeBtn.textContent = '×';
+                removeBtn.title = 'Remove ' + sub.name;
+                removeBtn.addEventListener('click', () => removeSubMember(member, subIdx));
+
                 const st = sub.status || 'pending';
                 const toggle = document.createElement('button');
                 toggle.className = 'sub-member-toggle ' + st;
                 toggle.textContent = subMemberLabels[st];
                 toggle.addEventListener('click', () => toggleSubMember(member, subIdx));
 
-                const subPlaceholder = document.createElement('span');
-
                 row.appendChild(name);
                 row.appendChild(holBtn);
-                row.appendChild(subPlaceholder);
+                row.appendChild(removeBtn);
                 row.appendChild(toggle);
                 container.appendChild(row);
             });
@@ -1047,28 +1070,33 @@
                 const rsvpRow = document.createElement('div');
                 rsvpRow.className = 'rsvp-grid';
 
-                // Family name with expand arrow
+                // Family name with expand arrow (all families are expandable so
+                // individual people can be added, renamed or removed)
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'family-member';
-                const hasMembers = memberData.members && memberData.members.length > 0;
                 const isExpanded = expandedFamilies.has(member);
 
-                if (hasMembers) {
-                    const arrow = document.createElement('span');
-                    arrow.className = 'expand-arrow' + (isExpanded ? ' expanded' : '');
-                    arrow.textContent = '\u25B6';
-                    nameDiv.appendChild(arrow);
-                }
+                const arrow = document.createElement('span');
+                arrow.className = 'expand-arrow' + (isExpanded ? ' expanded' : '');
+                arrow.textContent = '\u25B6';
+                nameDiv.appendChild(arrow);
+
                 const nameText = document.createTextNode(member);
                 nameDiv.appendChild(nameText);
-                if (hasMembers) {
-                    nameDiv.style.cursor = 'pointer';
-                    nameDiv.addEventListener('click', () => {
-                        if (expandedFamilies.has(member)) expandedFamilies.delete(member);
-                        else expandedFamilies.add(member);
-                        updateRSVPList();
-                    });
-                }
+
+                const editNameBtn = document.createElement('button');
+                editNameBtn.className = 'edit-name-btn';
+                editNameBtn.textContent = '\u270E';
+                editNameBtn.title = 'Rename ' + member;
+                editNameBtn.addEventListener('click', (e) => { e.stopPropagation(); editFamilyName(member); });
+                nameDiv.appendChild(editNameBtn);
+
+                nameDiv.style.cursor = 'pointer';
+                nameDiv.addEventListener('click', () => {
+                    if (expandedFamilies.has(member)) expandedFamilies.delete(member);
+                    else expandedFamilies.add(member);
+                    updateRSVPList();
+                });
 
                 const holidayBtn = document.createElement('button');
                 const onHol = isOnHoliday(member);
@@ -1090,7 +1118,7 @@
                 wrapper.appendChild(rsvpRow);
 
                 // Sub-members (expanded)
-                if (hasMembers && isExpanded) {
+                if (isExpanded) {
                     wrapper.appendChild(renderSubMembers(member, memberData));
                 }
 
@@ -1107,15 +1135,12 @@
 
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'family-member guest-row';
-                const hasMembers = guest.members && guest.members.length > 0;
                 const isExpanded = expandedFamilies.has('guest-' + index);
 
-                if (hasMembers) {
-                    const arrow = document.createElement('span');
-                    arrow.className = 'expand-arrow' + (isExpanded ? ' expanded' : '');
-                    arrow.textContent = '\u25B6';
-                    nameDiv.appendChild(arrow);
-                }
+                const arrow = document.createElement('span');
+                arrow.className = 'expand-arrow' + (isExpanded ? ' expanded' : '');
+                arrow.textContent = '\u25B6';
+                nameDiv.appendChild(arrow);
 
                 const nameText = document.createTextNode(guest.name);
                 nameDiv.appendChild(nameText);
@@ -1125,21 +1150,26 @@
                 label.textContent = '(guest)';
                 nameDiv.appendChild(label);
 
+                const editNameBtn = document.createElement('button');
+                editNameBtn.className = 'edit-name-btn';
+                editNameBtn.textContent = '\u270E';
+                editNameBtn.title = 'Rename ' + guest.name;
+                editNameBtn.addEventListener('click', (e) => { e.stopPropagation(); editGuestName(index); });
+                nameDiv.appendChild(editNameBtn);
+
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'remove-guest-btn';
                 removeBtn.textContent = '\u00D7';
                 removeBtn.addEventListener('click', (e) => { e.stopPropagation(); removeAdditionalGuest(index); });
                 nameDiv.appendChild(removeBtn);
 
-                if (hasMembers) {
-                    nameDiv.style.cursor = 'pointer';
-                    nameDiv.addEventListener('click', () => {
-                        const key = 'guest-' + index;
-                        if (expandedFamilies.has(key)) expandedFamilies.delete(key);
-                        else expandedFamilies.add(key);
-                        updateRSVPList();
-                    });
-                }
+                nameDiv.style.cursor = 'pointer';
+                nameDiv.addEventListener('click', () => {
+                    const key = 'guest-' + index;
+                    if (expandedFamilies.has(key)) expandedFamilies.delete(key);
+                    else expandedFamilies.add(key);
+                    updateRSVPList();
+                });
 
                 const holPlaceholder = document.createElement('span');
 
@@ -1159,7 +1189,7 @@
                 wrapper.appendChild(rsvpRow);
 
                 // Sub-members for additional guests
-                if (hasMembers && isExpanded) {
+                if (isExpanded) {
                     wrapper.appendChild(renderSubMembersForGuest(index, guest));
                 }
 
@@ -1186,6 +1216,8 @@
         }
 
         function deriveParentStatus(members) {
+            // No sub-members means there is no per-person info to derive from.
+            if (!members || members.length === 0) return 'pending';
             const allNotComing = members.every(m => m.status === 'not-coming');
             if (allNotComing) return 'not-coming';
             if (members.some(m => m.status === 'coming')) return 'coming';
@@ -1261,6 +1293,104 @@
                 updateDisplay();
                 saveStateToFirebase();
             }
+        }
+
+        // Rename a family everywhere it is referenced (rsvp data, family list,
+        // holidays, host and menu assignments) so the change is consistent.
+        function renameFamilyKey(oldName, newName) {
+            if (rsvpData[oldName]) {
+                rsvpData[newName] = rsvpData[oldName];
+                delete rsvpData[oldName];
+            }
+
+            const idx = familyMembers.indexOf(oldName);
+            if (idx > -1) familyMembers[idx] = newName;
+
+            // Holiday keys are stored as "family" or "family:subName"
+            Object.keys(holidayData).forEach(key => {
+                if (key === oldName) {
+                    holidayData[newName] = holidayData[key];
+                    delete holidayData[key];
+                } else if (key.startsWith(oldName + ':')) {
+                    holidayData[newName + key.slice(oldName.length)] = holidayData[key];
+                    delete holidayData[key];
+                }
+            });
+
+            if (currentHost === oldName) currentHost = newName;
+
+            if (expandedFamilies.has(oldName)) {
+                expandedFamilies.delete(oldName);
+                expandedFamilies.add(newName);
+            }
+
+            // Update menu "who's bringing" assignments
+            Object.values(bringData).forEach(d => {
+                if (d && d.person === oldName) d.person = newName;
+            });
+        }
+
+        async function editFamilyName(member) {
+            const newName = await showPrompt('Rename family', member);
+            if (!newName || newName === member) return;
+            if (familyMembers.includes(newName) || rsvpData[newName]) {
+                showToast('A family with that name already exists');
+                return;
+            }
+            renameFamilyKey(member, newName);
+            updateDisplay();
+            saveStateToFirebase();
+            saveHolidaysToFirebase();
+        }
+
+        async function editSubMember(member, subIdx) {
+            const d = rsvpData[member];
+            if (!d || !d.members || !d.members[subIdx]) return;
+            const oldName = d.members[subIdx].name;
+            const newName = await showPrompt('Rename person', oldName);
+            if (!newName || newName === oldName) return;
+
+            d.members[subIdx].name = newName;
+
+            // Migrate any holiday set on this specific person
+            const oldKey = getHolidayKey(member, oldName);
+            const newKey = getHolidayKey(member, newName);
+            if (holidayData[oldKey]) {
+                holidayData[newKey] = holidayData[oldKey];
+                delete holidayData[oldKey];
+                saveHolidaysToFirebase();
+            }
+
+            updateDisplay();
+            saveStateToFirebase();
+        }
+
+        async function removeSubMember(member, subIdx) {
+            const d = rsvpData[member];
+            if (!d || !d.members || !d.members[subIdx]) return;
+            const person = d.members[subIdx].name;
+            const yes = await showConfirm('Remove Person', 'Remove ' + person + ' from ' + member + '?');
+            if (!yes) return;
+
+            // Clear any holiday set on this person
+            const key = getHolidayKey(member, person);
+            if (holidayData[key]) {
+                delete holidayData[key];
+                saveHolidaysToFirebase();
+            }
+
+            d.members.splice(subIdx, 1);
+            if (d.members.length > 0) {
+                d.status = deriveParentStatus(d.members);
+                syncMembersToGuests(member);
+                if (d.status === 'not-coming') d.guests = 0;
+            } else {
+                // No individuals left – revert to a simple family entry
+                d.members = null;
+            }
+
+            updateDisplay();
+            saveStateToFirebase();
         }
 
         function updateGuestSummary() {
@@ -1539,9 +1669,42 @@
             arrow.classList.toggle('collapsed');
         }
         
+        function addGuestMemberRow(value) {
+            const container = document.getElementById('guest-members-container');
+            const row = document.createElement('div');
+            row.className = 'guest-member-row';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'guest-input guest-member-input';
+            input.placeholder = 'Family member name...';
+            if (value) input.value = value;
+            input.onkeypress = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addGuestMemberRow();
+                }
+            };
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'guest-member-remove';
+            removeBtn.textContent = '×';
+            removeBtn.title = 'Remove this person';
+            removeBtn.onclick = () => row.remove();
+
+            row.appendChild(input);
+            row.appendChild(removeBtn);
+            container.appendChild(row);
+            input.focus();
+        }
+
         function showAddGuestsModal() {
             document.getElementById('guest-name-input').value = '';
-            document.getElementById('guest-members-input').value = '';
+            const container = document.getElementById('guest-members-container');
+            container.innerHTML = '';
+            // Start with one empty member row so the pattern is obvious
+            addGuestMemberRow();
             document.getElementById('guest-name-input').focus();
             document.getElementById('guests-modal').style.display = 'flex';
         }
@@ -1552,17 +1715,23 @@
 
         function addGuest() {
             const nameInput = document.getElementById('guest-name-input');
-            const membersInput = document.getElementById('guest-members-input');
             const guestName = nameInput.value.trim();
-            if (!guestName) return;
+            if (!guestName) {
+                showToast('Please enter a family name');
+                nameInput.focus();
+                return;
+            }
 
-            const membersText = membersInput.value.trim();
+            const memberInputs = document.querySelectorAll('#guest-members-container .guest-member-input');
+            const names = Array.from(memberInputs)
+                .map(i => i.value.trim())
+                .filter(Boolean);
+
             let members = null;
             let guestCount = 1;
-
-            if (membersText) {
-                members = membersText.split(',').map(n => n.trim()).filter(Boolean).map(name => ({ name, status: 'coming' }));
-                guestCount = members.length;
+            if (names.length > 0) {
+                members = names.map(name => ({ name, status: 'coming' }));
+                guestCount = names.length;
             }
 
             additionalGuests.push({
@@ -1573,11 +1742,9 @@
                 members
             });
 
-            nameInput.value = '';
-            membersInput.value = '';
             closeGuestsModal();
 
-            // Auto-expand if has members
+            // Auto-expand if it has named members
             if (members && members.length > 0) {
                 expandedFamilies.add('guest-' + (additionalGuests.length - 1));
             }
@@ -1634,7 +1801,7 @@
             if (name) {
                 const guest = additionalGuests[guestIdx];
                 if (!guest.members) guest.members = [];
-                guest.members.push({ name, status: guest.status || 'pending' });
+                guest.members.push({ name, status: guest.status || 'coming' });
                 guest.status = deriveParentStatus(guest.members);
                 guest.guests = guest.members.filter(m => m.status === 'coming').length;
                 updateRSVPList();
@@ -1643,22 +1810,74 @@
             }
         }
 
+        async function editGuestName(guestIdx) {
+            const guest = additionalGuests[guestIdx];
+            if (!guest) return;
+            const newName = await showPrompt('Rename guest', guest.name);
+            if (!newName || newName === guest.name) return;
+            guest.name = newName;
+            updateRSVPList();
+            updateGuestSummary();
+            saveStateToFirebase();
+        }
+
+        async function editGuestSubMember(guestIdx, subIdx) {
+            const guest = additionalGuests[guestIdx];
+            if (!guest || !guest.members || !guest.members[subIdx]) return;
+            const oldName = guest.members[subIdx].name;
+            const newName = await showPrompt('Rename person', oldName);
+            if (!newName || newName === oldName) return;
+            guest.members[subIdx].name = newName;
+            updateRSVPList();
+            updateGuestSummary();
+            saveStateToFirebase();
+        }
+
+        async function removeGuestSubMember(guestIdx, subIdx) {
+            const guest = additionalGuests[guestIdx];
+            if (!guest || !guest.members || !guest.members[subIdx]) return;
+            const person = guest.members[subIdx].name;
+            const yes = await showConfirm('Remove Person', 'Remove ' + person + ' from ' + guest.name + '?');
+            if (!yes) return;
+
+            guest.members.splice(subIdx, 1);
+            if (guest.members.length > 0) {
+                guest.status = deriveParentStatus(guest.members);
+                guest.guests = guest.members.filter(m => m.status === 'coming').length;
+                if (guest.status === 'not-coming') guest.guests = 0;
+            } else {
+                guest.members = null;
+                guest.guests = guest.status === 'coming' ? (guest.previousGuests || 1) : 0;
+            }
+
+            updateRSVPList();
+            updateGuestSummary();
+            saveStateToFirebase();
+        }
+
         function renderSubMembersForGuest(guestIdx, guest) {
             const container = document.createElement('div');
             container.className = 'sub-members-list';
-            if (!guest.members) return container;
 
-            guest.members.forEach((sub, subIdx) => {
+            const members = guest.members || [];
+            members.forEach((sub, subIdx) => {
                 const row = document.createElement('div');
                 row.className = 'sub-member-row';
 
                 const name = document.createElement('span');
-                name.className = 'sub-member-name';
+                name.className = 'sub-member-name editable';
                 name.textContent = sub.name;
+                name.title = 'Tap to rename';
+                name.addEventListener('click', () => editGuestSubMember(guestIdx, subIdx));
 
                 // Placeholder for holiday column (guests don't have holidays)
                 const holPlaceholder = document.createElement('span');
-                const countPlaceholder = document.createElement('span');
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'sub-member-remove';
+                removeBtn.textContent = '×';
+                removeBtn.title = 'Remove ' + sub.name;
+                removeBtn.addEventListener('click', () => removeGuestSubMember(guestIdx, subIdx));
 
                 const st = sub.status || 'pending';
                 const toggle = document.createElement('button');
@@ -1668,7 +1887,7 @@
 
                 row.appendChild(name);
                 row.appendChild(holPlaceholder);
-                row.appendChild(countPlaceholder);
+                row.appendChild(removeBtn);
                 row.appendChild(toggle);
                 container.appendChild(row);
             });
@@ -2148,7 +2367,7 @@
             
             // Check if there's meaningful data to archive
             const hasRSVPData = Object.values(rsvpData).some(r => r.status !== 'pending');
-            const hasMenuData = bringItems.length > 0 || Object.keys(bringData).some(item => bringData[item] && bringData[item] !== '');
+            const hasMenuData = bringItems.length > 0 || Object.values(bringData).some(d => d && d.assigned);
             const hasAdditionalGuests = additionalGuests.length > 0;
             
             if (!hasRSVPData && !hasMenuData && !hasAdditionalGuests) {

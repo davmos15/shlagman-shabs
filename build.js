@@ -44,7 +44,7 @@ try {
         console.log('✅ Firebase API key successfully injected into', outputPath);
         
         // Copy other files to dist
-        const filesToCopy = ['styles.css', 'middleware.js', 'vercel.json'];
+        const filesToCopy = ['styles.css', 'middleware.js', 'vercel.json', 'favicon.svg'];
         filesToCopy.forEach(file => {
             const srcPath = path.join(__dirname, file);
             const destPath = path.join(distDir, file);
