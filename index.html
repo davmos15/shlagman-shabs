@@ -487,13 +487,20 @@
             };
         }
 
-        // Family members from the WhatsApp group (alphabetical order)
-        // This is the default/seed list. The live list can be edited by users and
-        // is persisted in Firebase (see loadStateFromFirebase / saveStateToFirebase).
-        let familyMembers = [
+        // Family members from the WhatsApp group (alphabetical order).
+        // defaultFamilyMembers is the immutable seed list shipped in code.
+        // familyMembers is the live list: it can be edited by users and is
+        // persisted in Firebase (see loadStateFromFirebase / saveStateToFirebase).
+        const defaultFamilyMembers = [
             'Adi & Gabe', 'Begleiter', 'Bobba', 'Gilla',
             'Meyerowitz', 'Mosberg', 'Moskow 29b', 'Moskow 5/66', 'PB'
         ];
+        let familyMembers = defaultFamilyMembers.slice();
+
+        // Default families that have been renamed away. Tracked so a code default
+        // is never resurrected once a user has renamed it, while genuinely new
+        // defaults added in code later still get merged in (see reconcileFamilyMembers).
+        let retiredFamilies = [];
 
         // Default guest counts for each family
         const defaultGuestCounts = {
@@ -741,6 +748,21 @@
             return null;
         }
 
+        // Merge the persisted family list with the code defaults. The persisted
+        // list (with any user renames) wins and keeps its order; any default that
+        // is new in code AND hasn't been retired via a rename is appended, so
+        // roster changes shipped in code still show up without resurrecting
+        // families the user has renamed away.
+        function reconcileFamilyMembers(persisted) {
+            const list = Array.isArray(persisted) && persisted.length ? persisted.slice() : defaultFamilyMembers.slice();
+            defaultFamilyMembers.forEach(def => {
+                if (!list.includes(def) && !retiredFamilies.includes(def)) {
+                    list.push(def);
+                }
+            });
+            familyMembers = list;
+        }
+
         familyMembers.forEach(member => {
             const defaultCount = defaultGuestCounts[member] || 1;
             const members = initMembersArray(member);
@@ -767,6 +789,7 @@
                     additionalGuests,
                     menuNotes,
                     familyMembers,
+                    retiredFamilies,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
@@ -827,9 +850,8 @@
                     if (data.bringItems) bringItems = data.bringItems;
                     if (data.additionalGuests) additionalGuests = data.additionalGuests;
                     if (data.menuNotes) menuNotes = data.menuNotes;
-                    if (data.familyMembers && Array.isArray(data.familyMembers) && data.familyMembers.length) {
-                        familyMembers = data.familyMembers;
-                    }
+                    if (Array.isArray(data.retiredFamilies)) retiredFamilies = data.retiredFamilies;
+                    reconcileFamilyMembers(data.familyMembers);
 
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
@@ -877,9 +899,8 @@
                     if (data.bringItems) bringItems = data.bringItems;
                     if (data.additionalGuests) additionalGuests = data.additionalGuests;
                     if (data.menuNotes) menuNotes = data.menuNotes;
-                    if (data.familyMembers && Array.isArray(data.familyMembers) && data.familyMembers.length) {
-                        familyMembers = data.familyMembers;
-                    }
+                    if (Array.isArray(data.retiredFamilies)) retiredFamilies = data.retiredFamilies;
+                    reconcileFamilyMembers(data.familyMembers);
 
                     // Ensure all family members have RSVP data
                     familyMembers.forEach(member => {
@@ -1306,6 +1327,14 @@
             const idx = familyMembers.indexOf(oldName);
             if (idx > -1) familyMembers[idx] = newName;
 
+            // Track roster changes so reconcileFamilyMembers doesn't resurrect a
+            // renamed-away default, and un-retire a default name that's reused.
+            if (defaultFamilyMembers.includes(oldName) && !retiredFamilies.includes(oldName)) {
+                retiredFamilies.push(oldName);
+            }
+            const reused = retiredFamilies.indexOf(newName);
+            if (reused > -1) retiredFamilies.splice(reused, 1);
+
             // Holiday keys are stored as "family" or "family:subName"
             Object.keys(holidayData).forEach(key => {
                 if (key === oldName) {
@@ -1385,8 +1414,13 @@
                 syncMembersToGuests(member);
                 if (d.status === 'not-coming') d.guests = 0;
             } else {
-                // No individuals left – revert to a simple family entry
+                // No individuals left – revert to a clean, neutral family entry
+                // rather than leaving stale status/count from when members existed.
+                const defaultCount = defaultGuestCounts[member] || 1;
                 d.members = null;
+                d.status = 'pending';
+                d.guests = defaultCount;
+                d.previousGuests = defaultCount;
             }
 
             updateDisplay();
@@ -1846,8 +1880,11 @@
                 guest.guests = guest.members.filter(m => m.status === 'coming').length;
                 if (guest.status === 'not-coming') guest.guests = 0;
             } else {
+                // No named members left – treat as a single flat guest entry
+                // rather than carrying over the old member count.
                 guest.members = null;
-                guest.guests = guest.status === 'coming' ? (guest.previousGuests || 1) : 0;
+                guest.guests = guest.status === 'not-coming' ? 0 : 1;
+                guest.previousGuests = 1;
             }
 
             updateRSVPList();
@@ -2105,10 +2142,19 @@
         function resetToDefaults() {
             console.log("🔄 Resetting to defaults and setting up next event");
             
-            // Reset all RSVP data to default state
+            // Reset all RSVP data to a fresh (pending) state for the new week.
+            // Keep each family's existing people (renamed/edited rosters) and just
+            // reset their status; only fall back to the code defaults for families
+            // that have no people yet.
             familyMembers.forEach(member => {
                 const defaultCount = defaultGuestCounts[member] || 1;
-                const members = initMembersArray(member);
+                const existing = rsvpData[member];
+                let members;
+                if (existing && existing.members && existing.members.length) {
+                    members = existing.members.map(m => ({ name: m.name, status: 'pending' }));
+                } else {
+                    members = initMembersArray(member);
+                }
                 rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount, members };
             });
 
@@ -2265,12 +2311,14 @@
             const rsvpContainer = document.getElementById('history-rsvp-list');
             rsvpContainer.innerHTML = '';
             
-            // Display family members who came
-            familyMembers.forEach(member => {
+            // Display family members who came. Iterate the archived snapshot's own
+            // roster (not the live familyMembers list) so renaming a family later
+            // doesn't hide it from past events.
+            Object.keys(data.rsvpData || {}).forEach(member => {
                 if (data.rsvpData[member] && data.rsvpData[member].status === 'coming') {
                     const rsvpRow = document.createElement('div');
                     rsvpRow.className = 'rsvp-grid';
-                    
+
                     rsvpRow.innerHTML = `
                         <div class="family-member">${member}</div>
                         <span></span>
