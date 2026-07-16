@@ -1455,9 +1455,10 @@ textarea:focus {
 .plan-header {
     background: linear-gradient(135deg, #3f7fd1 0%, #2f66ad 100%);
     color: #fff;
-    padding: 9px 16px;
-    padding-top: calc(9px + env(safe-area-inset-top));
+    padding: 8px 16px 7px;
+    padding-top: calc(8px + env(safe-area-inset-top));
     text-align: center;
+    line-height: 1.2;
 }
 
 .plan-eyebrow {
@@ -1471,16 +1472,17 @@ textarea:focus {
 .plan-title {
     font-size: 17px;
     font-weight: 700;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .plan-info-pill {
     display: inline-block;
     background: rgba(255, 255, 255, 0.16);
     border-radius: 10px;
-    padding: 6px 10px;
+    padding: 5px 10px;
     font-size: 13px;
     font-weight: 600;
+    line-height: 1.2;
 }
 
 .plan-info-pill span {
@@ -1497,6 +1499,8 @@ textarea:focus {
     font-size: 14px;
     font-weight: 700;
     padding: 11px 8px;
+    min-height: 44px;
+    line-height: 1.2;
 }
 
 .plan-tab-btn.active {
@@ -1510,8 +1514,57 @@ textarea:focus {
 }
 
 /* Shorter fixed header + tab bar than the old design, so less spacer needed */
-#main-view .tab-content::before {
-    height: 132px;
+/* Lock the Plan screen to the real viewport height and take the header/tab
+   bar and bottom nav out of position:fixed so they become normal flex
+   children instead. That leaves .plan-tab-content as the ONLY scrolling
+   region, sized to whatever space is actually left over -- which is what
+   lets the family list fill the screen with no dead space when it's short,
+   and scroll internally (without the page itself growing) once there are
+   enough guests that it doesn't fit. History view is untouched. */
+#main-view.app-container {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#main-view .header-container {
+    position: static;
+    flex: 0 0 auto;
+}
+
+#main-view .plan-tab-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0;
+}
+
+#main-view .plan-tab-content::before {
+    display: none;
+}
+
+#main-view .plan-bottom-nav {
+    position: static;
+    flex: 0 0 auto;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+#rsvp-tab.tab-pane.active {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+#rsvp-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .plan-tab-content .tab-pane {
@@ -1520,6 +1573,7 @@ textarea:focus {
 
 /* Confirmation summary bar */
 .plan-summary-bar {
+    flex: 0 0 auto;
     background: linear-gradient(135deg, #e6fffa 0%, #f0fff4 100%);
     border: 1px solid #81e6d9;
     border-radius: 12px;
@@ -1532,7 +1586,7 @@ textarea:focus {
 }
 
 .plan-summary-text {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     color: #234e52;
 }
@@ -1542,27 +1596,33 @@ textarea:focus {
     background: none;
     border: none;
     color: #2f66ad;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     cursor: pointer;
-    min-height: 32px;
+    min-height: 36px;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
 }
 
 /* Family / guest rows */
 .plan-family-wrapper {
-    margin-bottom: 3px;
+    margin-bottom: 4px;
+    flex: 1 0 auto;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
 }
 
 .plan-family-row {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     background: #fff;
     border: 1px solid transparent;
-    border-radius: 10px;
-    padding: 2px 5px;
+    border-radius: 12px;
+    padding: 4px 10px;
+    min-height: 60px;
+    flex: 1 0 auto;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
@@ -1580,7 +1640,7 @@ textarea:focus {
 }
 
 .plan-name-text {
-    font-size: 12.5px;
+    font-size: 16.5px;
     font-weight: 700;
     color: #1a2733;
     white-space: nowrap;
@@ -1597,13 +1657,13 @@ textarea:focus {
 }
 
 .plan-hosting-badge {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
     color: #fff;
     background: #2f66ad;
-    padding: 1px 5px;
-    border-radius: 6px;
-    margin-left: 4px;
+    padding: 2px 7px;
+    border-radius: 7px;
+    margin-left: 6px;
     cursor: pointer;
     white-space: nowrap;
 }
@@ -1613,9 +1673,9 @@ textarea:focus {
     background: none;
     border: none;
     color: #94a3b8;
-    font-size: 12px;
+    font-size: 15px;
     cursor: pointer;
-    padding: 2px 3px;
+    padding: 4px 5px;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -1624,11 +1684,11 @@ textarea:focus {
 }
 
 .plan-name-input {
-    font-size: 12.5px;
+    font-size: 16.5px;
     font-weight: 700;
     border: 2px solid #2f66ad;
-    border-radius: 6px;
-    padding: 2px 5px;
+    border-radius: 7px;
+    padding: 6px 8px;
     width: 100%;
     min-width: 0;
     flex: 1;
@@ -1637,45 +1697,45 @@ textarea:focus {
 
 .plan-name-confirm {
     flex-shrink: 0;
-    min-height: 32px;
-    padding: 0 8px;
+    min-height: 40px;
+    padding: 0 12px;
     border: none;
-    border-radius: 6px;
+    border-radius: 7px;
     background: #2f66ad;
     color: #fff;
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
 }
 
 .plan-name-remove {
     flex-shrink: 0;
-    min-height: 32px;
-    padding: 0 8px;
-    margin-left: 2px;
+    min-height: 40px;
+    padding: 0 10px;
+    margin-left: 3px;
     border: none;
-    border-radius: 6px;
+    border-radius: 7px;
     background: none;
     color: #c0392b;
-    font-size: 14px;
+    font-size: 17px;
     cursor: pointer;
 }
 
 .plan-holiday-badge {
     flex-shrink: 0;
-    font-size: 15px;
+    font-size: 18px;
 }
 
 /* Yes / No toggle buttons (family-level and member-level share the same
    44px-minimum tap target, per the redesign's accessibility goal) */
 .plan-yesno-btn {
-    flex: 0 0 58px;
-    min-height: 44px;
-    border-radius: 9px;
+    flex: 0 0 70px;
+    min-height: 50px;
+    border-radius: 10px;
     border: 2px solid #e2e8f0;
     background: #fff;
     color: #52606d;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     cursor: pointer;
     padding: 0;
@@ -1683,9 +1743,9 @@ textarea:focus {
 }
 
 .plan-yesno-btn.small {
-    flex: 0 0 44px;
-    min-height: 44px;
-    font-size: 11px;
+    flex: 0 0 54px;
+    min-height: 46px;
+    font-size: 12.5px;
 }
 
 .plan-yesno-btn.yes.active {
@@ -1705,8 +1765,8 @@ textarea:focus {
 }
 
 .plan-chevron {
-    flex: 0 0 22px;
-    min-height: 44px;
+    flex: 0 0 28px;
+    min-height: 50px;
     background: none;
     border: none;
     color: #2f66ad;
@@ -1720,7 +1780,7 @@ textarea:focus {
 
 .plan-chevron-glyph {
     display: inline-block;
-    font-size: 15px;
+    font-size: 19px;
     transition: transform 0.2s;
 }
 
@@ -1729,12 +1789,12 @@ textarea:focus {
 }
 
 .plan-delete-btn {
-    flex: 0 0 24px;
-    min-height: 44px;
+    flex: 0 0 32px;
+    min-height: 50px;
     background: none;
     border: none;
     color: #c0392b;
-    font-size: 14px;
+    font-size: 17px;
     cursor: pointer;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
@@ -1744,6 +1804,7 @@ textarea:focus {
 .plan-expand-panel {
     display: flex;
     flex-direction: column;
+    flex: 0 0 auto;
     gap: 3px;
     margin-top: 3px;
     padding-left: 10px;
@@ -1850,9 +1911,10 @@ textarea:focus {
     justify-content: space-between;
     align-items: center;
     background: #f0f4f8;
-    border-radius: 9px;
-    padding: 3px 7px;
-    gap: 5px;
+    border-radius: 10px;
+    padding: 8px 10px;
+    min-height: 52px;
+    gap: 6px;
 }
 
 .plan-member-name-area {
@@ -1860,11 +1922,11 @@ textarea:focus {
     min-width: 0;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
 }
 
 .plan-member-name {
-    font-size: 12.5px;
+    font-size: 15.5px;
     font-weight: 600;
     color: #1a2733;
     flex: 1;
@@ -1875,11 +1937,11 @@ textarea:focus {
 }
 
 .plan-member-away-toggle {
-    flex: 0 0 22px;
-    min-height: 40px;
+    flex: 0 0 26px;
+    min-height: 48px;
     background: none;
     border: none;
-    font-size: 13px;
+    font-size: 15px;
     cursor: pointer;
     padding: 0;
     color: #cbd5e0;
@@ -1893,18 +1955,18 @@ textarea:focus {
 .plan-add-person-row {
     display: flex;
     padding-left: 4px;
-    margin-top: 2px;
+    margin-top: 4px;
 }
 
 .plan-add-person-btn {
     background: none;
     border: none;
     color: #2f66ad;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     cursor: pointer;
-    padding: 4px 0;
-    min-height: 32px;
+    padding: 6px 0;
+    min-height: 36px;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -1915,30 +1977,30 @@ textarea:focus {
 /* What to Bring tab */
 .plan-menu-notes-label,
 .plan-menu-list-label {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
     color: #1a2733;
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .plan-menu-list-label {
-    margin-top: 4px;
-    margin-bottom: 8px;
+    margin-top: 6px;
+    margin-bottom: 10px;
 }
 
 .plan-menu-notes-card {
     display: block;
     width: 100%;
-    min-height: 56px;
+    min-height: 64px;
     background: #fff;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    padding: 10px 12px;
-    font-size: 13px;
+    padding: 12px 14px;
+    font-size: 15px;
     font-family: var(--font-family);
     color: #2d3748;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
     resize: vertical;
 }
 
@@ -1949,24 +2011,25 @@ textarea:focus {
     gap: 10px;
     background: #fff;
     border-radius: 14px;
-    padding: 10px 14px;
-    margin-bottom: 8px;
+    padding: 14px 16px;
+    min-height: 60px;
+    margin-bottom: 10px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
 }
 
 .plan-menu-item-name {
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 600;
     color: #1a2733;
     cursor: pointer;
 }
 
 .plan-menu-select {
-    min-height: 40px;
-    padding: 0 8px;
+    min-height: 48px;
+    padding: 0 10px;
     border-radius: 11px;
     border: 2px solid #e2e8f0;
-    font-size: 12.5px;
+    font-size: 14.5px;
     font-weight: 700;
     cursor: pointer;
     font-family: var(--font-family);
@@ -1991,12 +2054,12 @@ textarea:focus {
     background: #2f66ad;
     color: #fff;
     border: none;
-    padding: 10px 22px;
-    border-radius: 11px;
-    font-size: 13px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    min-height: 44px;
+    min-height: 48px;
 }
 
 /* Bottom nav (main-view only -- History keeps the original look) */
