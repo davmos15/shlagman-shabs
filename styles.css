@@ -1445,3 +1445,578 @@ textarea:focus {
     align-items: center;
     justify-content: center;
 }
+/* ==========================================================================
+   Mobile redesign: "Plan" screen (Who's Coming / What to Bring).
+   Scoped to #main-view only -- the History view keeps its original classes
+   and styling untouched (see design_handoff_mobile_rsvp_redesign in the
+   uploaded review zip for the source spec).
+   ========================================================================== */
+
+.plan-header {
+    background: linear-gradient(135deg, #3f7fd1 0%, #2f66ad 100%);
+    color: #fff;
+    padding: 9px 16px;
+    padding-top: calc(9px + env(safe-area-inset-top));
+    text-align: center;
+}
+
+.plan-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    opacity: 0.85;
+    margin-bottom: 2px;
+}
+
+.plan-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.plan-info-pill {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.plan-info-pill span {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.plan-info-pill span:hover {
+    opacity: 0.8;
+}
+
+/* Plan-specific tab bar look (labels restyled from "RSVP"/"Menu") */
+.plan-tab-btn {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 11px 8px;
+}
+
+.plan-tab-btn.active {
+    color: #2f66ad;
+    border-bottom-color: #2f66ad;
+    background: rgba(47, 102, 173, 0.06);
+}
+
+.plan-tab-btn:not(.active) {
+    color: #52606d;
+}
+
+/* Shorter fixed header + tab bar than the old design, so less spacer needed */
+#main-view .tab-content::before {
+    height: 132px;
+}
+
+.plan-tab-content .tab-pane {
+    padding: 10px 14px 20px;
+}
+
+/* Confirmation summary bar */
+.plan-summary-bar {
+    background: linear-gradient(135deg, #e6fffa 0%, #f0fff4 100%);
+    border: 1px solid #81e6d9;
+    border-radius: 12px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.plan-summary-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: #234e52;
+}
+
+.plan-add-guests-link {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: #2f66ad;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 32px;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Family / guest rows */
+.plan-family-wrapper {
+    margin-bottom: 3px;
+}
+
+.plan-family-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #fff;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 2px 5px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.plan-family-row.host {
+    background: #eaf1fb;
+    border: 2px solid #bcd2ef;
+}
+
+.plan-name-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.plan-name-text {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1a2733;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.plan-guest-count {
+    font-weight: 500;
+    color: #8a97a5;
+}
+
+.plan-hosting-badge {
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+    background: #2f66ad;
+    padding: 1px 5px;
+    border-radius: 6px;
+    margin-left: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.plan-edit-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 2px 3px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.plan-edit-btn:hover {
+    color: #2f66ad;
+}
+
+.plan-name-input {
+    font-size: 12.5px;
+    font-weight: 700;
+    border: 2px solid #2f66ad;
+    border-radius: 6px;
+    padding: 2px 5px;
+    width: 100%;
+    min-width: 0;
+    flex: 1;
+    font-family: var(--font-family);
+}
+
+.plan-name-confirm {
+    flex-shrink: 0;
+    min-height: 32px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 6px;
+    background: #2f66ad;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.plan-name-remove {
+    flex-shrink: 0;
+    min-height: 32px;
+    padding: 0 8px;
+    margin-left: 2px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: #c0392b;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.plan-holiday-badge {
+    flex-shrink: 0;
+    font-size: 15px;
+}
+
+/* Yes / No toggle buttons (family-level and member-level share the same
+   44px-minimum tap target, per the redesign's accessibility goal) */
+.plan-yesno-btn {
+    flex: 0 0 58px;
+    min-height: 44px;
+    border-radius: 9px;
+    border: 2px solid #e2e8f0;
+    background: #fff;
+    color: #52606d;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.plan-yesno-btn.small {
+    flex: 0 0 44px;
+    min-height: 44px;
+    font-size: 11px;
+}
+
+.plan-yesno-btn.yes.active {
+    background: #48bb78;
+    border-color: #48bb78;
+    color: #fff;
+}
+
+.plan-yesno-btn.no.active {
+    background: #dd7d76;
+    border-color: #dd7d76;
+    color: #fff;
+}
+
+.plan-yesno-btn:active {
+    transform: scale(0.95);
+}
+
+.plan-chevron {
+    flex: 0 0 22px;
+    min-height: 44px;
+    background: none;
+    border: none;
+    color: #2f66ad;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.plan-chevron-glyph {
+    display: inline-block;
+    font-size: 15px;
+    transition: transform 0.2s;
+}
+
+.plan-chevron-glyph.expanded {
+    transform: rotate(90deg);
+}
+
+.plan-delete-btn {
+    flex: 0 0 24px;
+    min-height: 44px;
+    background: none;
+    border: none;
+    color: #c0392b;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Expanded panel: away/holiday + member list */
+.plan-expand-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 3px;
+    padding-left: 10px;
+}
+
+.plan-away-panel {
+    background: #fbfaf7;
+    border-radius: 9px;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+}
+
+.plan-away-panel.compact {
+    border-radius: 8px;
+    padding: 5px 7px;
+    margin: 3px 0 3px 4px;
+}
+
+.plan-away-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #8a97a5;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 4px;
+}
+
+.plan-away-emojis {
+    display: flex;
+    gap: 5px;
+}
+
+.plan-away-emoji-btn {
+    flex: 0 0 40px;
+    min-height: 36px;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    background: #fff;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.plan-away-emoji-btn.compact {
+    flex-basis: 34px;
+    min-height: 32px;
+    border-radius: 7px;
+    font-size: 13px;
+}
+
+.plan-away-emoji-btn.selected {
+    background: #fef3c7;
+    border-color: #f2c14e;
+}
+
+.plan-away-modes {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.plan-away-mode-btn {
+    flex: 1;
+    min-height: 36px;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    background: #fff;
+    color: #52606d;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.plan-away-mode-btn.compact {
+    min-height: 32px;
+    border-radius: 7px;
+    font-size: 10.5px;
+}
+
+.plan-away-mode-btn.active {
+    background: #eaf1fb;
+    border-color: #2f66ad;
+    color: #2f66ad;
+}
+
+.plan-away-date-input {
+    margin-top: 5px;
+    width: 100%;
+    font-size: 12px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    font-family: var(--font-family);
+}
+
+.plan-away-summary {
+    font-size: 11px;
+    color: #52606d;
+    margin-top: 4px;
+}
+
+/* Member rows */
+.plan-member-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f0f4f8;
+    border-radius: 9px;
+    padding: 3px 7px;
+    gap: 5px;
+}
+
+.plan-member-name-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.plan-member-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1a2733;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.plan-member-away-toggle {
+    flex: 0 0 22px;
+    min-height: 40px;
+    background: none;
+    border: none;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    color: #cbd5e0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.plan-member-away-toggle.set {
+    color: #1a2733;
+}
+
+.plan-add-person-row {
+    display: flex;
+    padding-left: 4px;
+    margin-top: 2px;
+}
+
+.plan-add-person-btn {
+    background: none;
+    border: none;
+    color: #2f66ad;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 4px 0;
+    min-height: 32px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.plan-add-person-btn:hover {
+    text-decoration: underline;
+}
+
+/* What to Bring tab */
+.plan-menu-notes-label,
+.plan-menu-list-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a2733;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.plan-menu-list-label {
+    margin-top: 4px;
+    margin-bottom: 8px;
+}
+
+.plan-menu-notes-card {
+    display: block;
+    width: 100%;
+    min-height: 56px;
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-family: var(--font-family);
+    color: #2d3748;
+    margin-bottom: 18px;
+    resize: vertical;
+}
+
+.plan-menu-item-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+}
+
+.plan-menu-item-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a2733;
+    cursor: pointer;
+}
+
+.plan-menu-select {
+    min-height: 40px;
+    padding: 0 8px;
+    border-radius: 11px;
+    border: 2px solid #e2e8f0;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: var(--font-family);
+}
+
+.plan-menu-select.covered {
+    background: #e3f9e9;
+    color: #1f7a3d;
+}
+
+.plan-menu-select.needed {
+    background: #fdeceb;
+    color: #94454a;
+}
+
+.plan-edit-menu-actions {
+    margin-top: 12px;
+    text-align: center;
+}
+
+.plan-edit-menu-btn {
+    background: #2f66ad;
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+}
+
+/* Bottom nav (main-view only -- History keeps the original look) */
+.plan-bottom-nav .nav-btn {
+    min-height: 46px;
+    padding: 6px 8px;
+    gap: 2px;
+    color: #52606d;
+}
+
+.plan-bottom-nav .nav-btn.active {
+    background: rgba(47, 102, 173, 0.08);
+    color: #2f66ad;
+}
+
+.plan-bottom-nav .nav-icon {
+    font-size: 18px;
+}
+
+.plan-bottom-nav .nav-label {
+    font-size: 11px;
+    font-weight: 700;
+}

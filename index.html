@@ -22,76 +22,69 @@
         <!-- Fixed Header Container -->
         <div class="header-container">
             <!-- Header -->
-            <header class="app-header">
-                <h1 class="app-title">🕯️ Shlagman Shabs Plan</h1>
-                <div class="event-info-card">
-                    <div class="event-date" id="current-date" onclick="editDate()"></div>
-                    <div class="event-details">
-                        <div class="event-host" onclick="editHost()">
-                            <span class="host-icon">🏠</span>
-                            <span class="host-name" id="current-host"></span>
-                        </div>
-                        <div class="event-time" onclick="editTime()">
-                            <span class="time-icon">🕑</span>
-                            <span id="current-time">7:00 PM</span>
-                        </div>
-                    </div>
+            <header class="plan-header">
+                <div class="plan-eyebrow">🕯️ SHLAGMAN SHABS</div>
+                <div class="plan-title" id="current-date"></div>
+                <div class="plan-info-pill">
+                    <span id="current-date-inline" onclick="editDate()"></span>
+                    &nbsp;&middot;&nbsp;
+                    <span id="current-time" onclick="editTime()">7:00 PM</span>
                 </div>
+                <!-- Host is not shown here by design -- the hosting family is
+                     highlighted directly in the list below. This element still
+                     exists (hidden) so updateDisplay() has somewhere to write
+                     the current host without special-casing the header. -->
+                <span id="current-host" style="display:none"></span>
             </header>
 
             <!-- Tab Navigation -->
-            <nav class="tab-nav">
-                <button class="tab-btn active" data-tab="rsvp" onclick="switchTab('rsvp')">
-                    👥 RSVP
+            <nav class="tab-nav plan-tab-nav">
+                <button class="tab-btn plan-tab-btn active" data-tab="rsvp" onclick="switchTab('rsvp')">
+                    Who's Coming
                 </button>
-                <button class="tab-btn" data-tab="menu" onclick="switchTab('menu')">
-                    🍽️ Menu
+                <button class="tab-btn plan-tab-btn" data-tab="menu" onclick="switchTab('menu')">
+                    What to Bring
                 </button>
             </nav>
         </div>
 
         <!-- Tab Content -->
-        <main class="tab-content">
+        <main class="tab-content plan-tab-content">
             <!-- RSVP Tab -->
             <div class="tab-pane active" id="rsvp-tab" data-section-title="Who's Coming">
-                <div class="guest-summary-card" id="guest-summary"></div>
-                <div class="content-section">
-                    <div id="rsvp-list"></div>
-                </div>
+                <div class="plan-summary-bar" id="guest-summary"></div>
+                <div id="rsvp-list"></div>
             </div>
 
             <!-- Menu Tab -->
             <div class="tab-pane" id="menu-tab" data-section-title="Menu">
-                <div class="menu-notes-section">
-                    <label class="notes-label">Menu Notes:</label>
-                    <textarea id="menu-notes" 
-                              placeholder="Add any notes about the menu, dietary restrictions, special requests, etc..." 
-                              oninput="updateMenuNotes(this.value)"></textarea>
-                </div>
-                <div class="content-section">
-                    <div id="bring-list"></div>
-                </div>
-                <div class="edit-menu-actions">
-                    <button class="action-btn secondary" onclick="editItems()">
-                        ✏️ Edit Menu Items
+                <label class="plan-menu-notes-label">Menu notes</label>
+                <textarea id="menu-notes" class="plan-menu-notes-card"
+                          placeholder="Add any notes about the menu, dietary restrictions, special requests, etc..."
+                          oninput="updateMenuNotes(this.value)"></textarea>
+                <div class="plan-menu-list-label">What to bring</div>
+                <div id="bring-list"></div>
+                <div class="plan-edit-menu-actions">
+                    <button class="plan-edit-menu-btn" onclick="editItems()">
+                        Edit Menu Items
                     </button>
                 </div>
             </div>
         </main>
 
         <!-- Bottom Navigation -->
-        <nav class="bottom-nav">
+        <nav class="bottom-nav plan-bottom-nav">
             <button class="nav-btn active" data-nav="plan" onclick="switchView('plan')">
                 <span class="nav-icon">🏠</span>
-                <span class="nav-label">Plan</span>
+                <span class="nav-label">This week</span>
             </button>
             <button class="nav-btn" data-nav="history" onclick="switchView('history')">
                 <span class="nav-icon">📅</span>
-                <span class="nav-label">History</span>
+                <span class="nav-label">Past dinners</span>
             </button>
             <button class="nav-btn" data-nav="share" onclick="switchView('share')">
-                <span class="nav-icon">📱</span>
-                <span class="nav-label">Share</span>
+                <span class="nav-icon">📲</span>
+                <span class="nav-label">Share update</span>
             </button>
         </nav>
     </div>
@@ -170,17 +163,6 @@
                 <span class="nav-label">Share</span>
             </button>
         </nav>
-    </div>
-
-    <!-- Selection Modal -->
-    <div class="modal" id="selection-modal">
-        <div class="modal-content">
-            <h3 id="modal-title">Select Person</h3>
-            <div id="person-list"></div>
-            <div class="modal-buttons">
-                <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
-            </div>
-        </div>
     </div>
 
     <!-- Edit Items Modal -->
@@ -284,25 +266,6 @@
         </div>
     </div>
 
-    <!-- Add Guests Modal -->
-    <div class="modal" id="guests-modal">
-        <div class="modal-content">
-            <h3>Add Guests</h3>
-            <label class="guest-field-label">Family name</label>
-            <input type="text" id="guest-name-input" placeholder="e.g. Kahlberg"
-                   class="guest-input">
-            <label class="guest-field-label">Family members</label>
-            <div id="guest-members-container"></div>
-            <button class="add-member-row-btn" id="add-guest-member-btn" onclick="addGuestMemberRow()">
-                + Add family member
-            </button>
-            <div class="modal-buttons">
-                <button class="modal-btn primary" onclick="addGuest()">Add</button>
-                <button class="modal-btn secondary" onclick="closeGuestsModal()">Cancel</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Name Input Modal for Favourites -->
     <div class="modal" id="name-input-modal">
         <div class="modal-content">
@@ -353,22 +316,6 @@
     </div>
 
     <!-- Toast Notification -->
-    <!-- Holiday Modal -->
-    <div class="modal" id="holiday-modal">
-        <div class="modal-content">
-            <h3 id="holiday-modal-title">Set Holiday</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 12px; font-size: 14px;">They will be marked as Not Coming until the holiday ends.</p>
-            <div id="holiday-emoji-picker" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;"></div>
-            <input type="date" id="holiday-date-input" class="date-input" style="margin-bottom: 12px;">
-            <div class="modal-buttons" style="flex-wrap: wrap; gap: 8px;">
-                <button class="modal-btn primary" id="holiday-set-btn">Set Holiday</button>
-                <button class="modal-btn secondary" id="holiday-indefinite-btn">Indefinite</button>
-                <button class="modal-btn secondary" id="holiday-clear-btn" style="background: var(--warning-color); color: white;">Remove Holiday</button>
-                <button class="modal-btn secondary" id="holiday-cancel-btn">Cancel</button>
-            </div>
-        </div>
-    </div>
-
     <div class="toast" id="toast"></div>
 
     <script>
@@ -552,7 +499,9 @@
             const key = getHolidayKey(family, subName);
             const h = holidayData[key];
             if (!h) return false;
-            if (h.until === 'indefinite') return true;
+            // No until date yet chosen (still picking "Until date" mode) counts as
+            // still away, same as 'indefinite' -- only a concrete past date expires it.
+            if (!h.until || h.until === 'indefinite') return true;
             return new Date(h.until) >= new Date(new Date().toISOString().split('T')[0]);
         }
 
@@ -566,7 +515,7 @@
         }
 
         const defaultHolidayEmoji = '🏝️';
-        const holidayEmojiOptions = ['🏝️', '✈️', '🏖️', '🇮🇱'];
+        const holidayEmojiOptions = ['🏝️', '✈️', '🤒'];
 
         function getHolidayEmoji(family, subName) {
             const key = getHolidayKey(family, subName);
@@ -574,120 +523,8 @@
             return (h && h.emoji) || defaultHolidayEmoji;
         }
 
-        function showHolidayModal(family, subName) {
-            const key = getHolidayKey(family, subName);
-            const label = subName || family;
-            document.getElementById('holiday-modal-title').textContent = 'Holiday - ' + label;
-
-            const dateInput = document.getElementById('holiday-date-input');
-            const existing = holidayData[key];
-            if (existing && existing.until !== 'indefinite') {
-                dateInput.value = existing.until;
-            } else {
-                const d = new Date();
-                d.setDate(d.getDate() + 14);
-                dateInput.value = d.toISOString().split('T')[0];
-            }
-
-            // Build emoji picker
-            let selectedEmoji = (existing && existing.emoji) || defaultHolidayEmoji;
-            const pickerContainer = document.getElementById('holiday-emoji-picker');
-            pickerContainer.innerHTML = '';
-
-            function selectPickerEmoji(emoji, triggerBtn) {
-                selectedEmoji = emoji;
-                pickerContainer.querySelectorAll('.emoji-opt').forEach(b => b.style.borderColor = 'transparent');
-                if (triggerBtn) triggerBtn.style.borderColor = 'var(--primary-color)';
-            }
-
-            const isCustom = !holidayEmojiOptions.includes(selectedEmoji);
-
-            holidayEmojiOptions.forEach(emoji => {
-                const btn = document.createElement('button');
-                btn.className = 'emoji-opt';
-                btn.textContent = emoji;
-                btn.style.cssText = 'font-size:24px;padding:4px 6px;border-radius:8px;border:2px solid transparent;background:none;cursor:pointer;';
-                if (!isCustom && emoji === selectedEmoji) btn.style.borderColor = 'var(--primary-color)';
-                btn.addEventListener('click', () => {
-                    selectPickerEmoji(emoji, btn);
-                    // Reset custom input
-                    const ci = pickerContainer.querySelector('input.emoji-opt');
-                    if (ci) { ci.value = ''; ci.style.borderColor = 'transparent'; }
-                });
-                pickerContainer.appendChild(btn);
-            });
-
-            const customInput = document.createElement('input');
-            customInput.type = 'text';
-            customInput.className = 'emoji-opt';
-            customInput.placeholder = '+';
-            customInput.value = isCustom ? selectedEmoji : '';
-            customInput.style.cssText = 'width:42px;font-size:22px;text-align:center;padding:4px 2px;border-radius:8px;border:2px solid ' + (isCustom ? 'var(--primary-color)' : 'transparent') + ';background:var(--background-color);cursor:pointer;';
-            customInput.addEventListener('input', () => {
-                // Keep only last entered character/emoji
-                const val = customInput.value;
-                if (val.length > 2) {
-                    // Grab the last grapheme (emoji can be multi-codepoint)
-                    const segments = [...new Intl.Segmenter().segment(val)].map(s => s.segment);
-                    customInput.value = segments[segments.length - 1];
-                }
-                if (customInput.value.trim()) {
-                    selectedEmoji = customInput.value.trim();
-                    pickerContainer.querySelectorAll('.emoji-opt').forEach(b => b.style.borderColor = 'transparent');
-                    customInput.style.borderColor = 'var(--primary-color)';
-                }
-            });
-            customInput.addEventListener('focus', () => {
-                pickerContainer.querySelectorAll('.emoji-opt').forEach(b => b.style.borderColor = 'transparent');
-                customInput.style.borderColor = 'var(--primary-color)';
-            });
-            pickerContainer.appendChild(customInput);
-
-            document.getElementById('holiday-modal').style.display = 'flex';
-
-            // Wire up buttons
-            const setBtn = document.getElementById('holiday-set-btn');
-            const indefBtn = document.getElementById('holiday-indefinite-btn');
-            const clearBtn = document.getElementById('holiday-clear-btn');
-            const cancelBtn = document.getElementById('holiday-cancel-btn');
-
-            function cleanup() {
-                document.getElementById('holiday-modal').style.display = 'none';
-                setBtn.replaceWith(setBtn.cloneNode(true));
-                indefBtn.replaceWith(indefBtn.cloneNode(true));
-                clearBtn.replaceWith(clearBtn.cloneNode(true));
-                cancelBtn.replaceWith(cancelBtn.cloneNode(true));
-            }
-
-            setBtn.onclick = () => {
-                if (dateInput.value) {
-                    holidayData[key] = { until: dateInput.value, emoji: selectedEmoji };
-                    applyHoliday(family, subName);
-                    cleanup();
-                    saveHolidaysToFirebase();
-                    updateDisplay();
-                }
-            };
-            indefBtn.onclick = () => {
-                holidayData[key] = { until: 'indefinite', emoji: selectedEmoji };
-                applyHoliday(family, subName);
-                cleanup();
-                saveHolidaysToFirebase();
-                updateDisplay();
-            };
-            clearBtn.onclick = () => {
-                delete holidayData[key];
-                cleanup();
-                saveHolidaysToFirebase();
-                updateDisplay();
-            };
-            cancelBtn.onclick = cleanup;
-            document.getElementById('holiday-modal').onclick = (e) => {
-                if (e.target === document.getElementById('holiday-modal')) cleanup();
-            };
-        }
-
         function applyHoliday(family, subName) {
+            const defaultCount = defaultGuestCounts[family] || 1;
             if (subName) {
                 // Apply to specific sub-member
                 const data = rsvpData[family];
@@ -696,18 +533,91 @@
                     if (sub) sub.status = 'not-coming';
                     data.status = deriveParentStatus(data.members);
                     syncMembersToGuests(family);
-                    if (data.status === 'not-coming') data.guests = 0;
+                    if (data.status === 'not-coming') {
+                        data.previousGuests = data.guests || defaultCount;
+                        data.guests = 0;
+                    }
                 }
             } else {
                 // Apply to whole family
                 const data = rsvpData[family];
                 if (data) {
+                    data.previousGuests = data.guests || defaultCount;
                     data.status = 'not-coming';
                     data.guests = 0;
                     if (data.members) data.members.forEach(m => m.status = 'not-coming');
                 }
             }
             saveStateToFirebase();
+        }
+
+        // Tapping an away emoji that isn't already selected sets it (defaulting
+        // to "indefinite" until the user picks "Until date"); tapping the
+        // already-selected emoji clears the away status back to pending.
+        function toggleAwayEmoji(family, subName, emoji) {
+            const key = getHolidayKey(family, subName);
+            const existing = holidayData[key];
+            if (existing && existing.emoji === emoji) {
+                clearAway(family, subName);
+                return;
+            }
+            const priorMode = existing && existing.until !== 'indefinite' ? existing.until : null;
+            holidayData[key] = { emoji, until: existing ? (existing.until === 'indefinite' ? 'indefinite' : priorMode || '') : 'indefinite' };
+            applyHoliday(family, subName);
+            saveHolidaysToFirebase();
+            updateDisplay();
+        }
+
+        function clearAway(family, subName) {
+            const key = getHolidayKey(family, subName);
+            delete holidayData[key];
+            const defaultCount = defaultGuestCounts[family] || 1;
+            const data = rsvpData[family];
+            if (subName) {
+                if (data && data.members) {
+                    const sub = data.members.find(m => m.name === subName);
+                    if (sub) sub.status = 'pending';
+                    data.status = deriveParentStatus(data.members);
+                    syncMembersToGuests(family);
+                    if (data.status !== 'coming' && data.status !== 'not-coming') {
+                        data.guests = data.previousGuests || defaultCount;
+                    }
+                }
+            } else if (data) {
+                data.status = 'pending';
+                data.guests = data.previousGuests || defaultCount;
+                if (data.members) {
+                    data.members.forEach(m => {
+                        if (!isOnHoliday(family, m.name)) m.status = 'pending';
+                    });
+                }
+            }
+            saveHolidaysToFirebase();
+            saveStateToFirebase();
+            updateDisplay();
+        }
+
+        function setAwayMode(family, subName, mode) {
+            const key = getHolidayKey(family, subName);
+            const existing = holidayData[key];
+            if (!existing) return;
+            if (mode === 'indefinite') {
+                holidayData[key] = { emoji: existing.emoji, until: 'indefinite' };
+            } else {
+                const priorDate = existing.until && existing.until !== 'indefinite' ? existing.until : '';
+                holidayData[key] = { emoji: existing.emoji, until: priorDate };
+            }
+            saveHolidaysToFirebase();
+            updateDisplay();
+        }
+
+        function setAwayUntilDate(family, subName, dateStr) {
+            const key = getHolidayKey(family, subName);
+            const existing = holidayData[key];
+            if (!existing) return;
+            holidayData[key] = { emoji: existing.emoji, until: dateStr };
+            saveHolidaysToFirebase();
+            updateDisplay();
         }
 
         function applyAllHolidays() {
@@ -740,12 +650,41 @@
             }
         }
         
-        // Initialize family member RSVPs
+        // Initialize family member RSVPs. Every family always gets at least one
+        // named member (falling back to the family's own name) so the "expand to
+        // see individual members" UI has something to show, even for one-person
+        // families that have no separate familySubMembers entry.
         function initMembersArray(familyName) {
             if (familySubMembers[familyName]) {
                 return familySubMembers[familyName].map(name => ({ name, status: 'pending' }));
             }
-            return null;
+            return [{ name: familyName, status: 'pending' }];
+        }
+
+        // Guarantee every family and additional guest has a non-empty members
+        // array, synthesizing a single self-named member when one is missing
+        // (covers older persisted data saved before every family had members).
+        function ensureMembersArrays() {
+            familyMembers.forEach(member => {
+                const defaultCount = defaultGuestCounts[member] || 1;
+                if (!rsvpData[member]) {
+                    rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount, members: initMembersArray(member) };
+                    return;
+                }
+                const data = rsvpData[member];
+                if (data.previousGuests === undefined) {
+                    data.previousGuests = data.guests || defaultCount;
+                }
+                if (!data.members || data.members.length === 0) {
+                    data.members = [{ name: member, status: data.status || 'pending' }];
+                }
+            });
+
+            additionalGuests.forEach(guest => {
+                if (!guest.members || guest.members.length === 0) {
+                    guest.members = [{ name: guest.name, status: guest.status || 'pending' }];
+                }
+            });
         }
 
         // Merge the persisted family list with the code defaults. The persisted
@@ -852,23 +791,7 @@
                     if (data.menuNotes) menuNotes = data.menuNotes;
                     if (Array.isArray(data.retiredFamilies)) retiredFamilies = data.retiredFamilies;
                     reconcileFamilyMembers(data.familyMembers);
-
-                    // Ensure all family members have RSVP data
-                    familyMembers.forEach(member => {
-                        const defaultCount = defaultGuestCounts[member] || 1;
-                        if (!rsvpData[member]) {
-                            const members = initMembersArray(member);
-                            rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount, members };
-                        } else {
-                            if (rsvpData[member].previousGuests === undefined) {
-                                rsvpData[member].previousGuests = rsvpData[member].guests || defaultCount;
-                            }
-                            // Ensure members array exists for families that should have them
-                            if (familySubMembers[member] && !rsvpData[member].members) {
-                                rsvpData[member].members = initMembersArray(member);
-                            }
-                        }
-                    });
+                    ensureMembersArrays();
 
                     initializeBringData();
                     updateDisplay();
@@ -881,7 +804,12 @@
                 }
             } catch (error) {
                 console.error('❌ Failed to load from Firebase:', error);
-                // updateSyncStatus('offline');
+                // Still render the locally-initialized default state so the app
+                // isn't left blank when Firebase is unreachable.
+                ensureMembersArrays();
+                initializeBringData();
+                applyAllHolidays();
+                updateDisplay();
             }
         }
         
@@ -901,23 +829,7 @@
                     if (data.menuNotes) menuNotes = data.menuNotes;
                     if (Array.isArray(data.retiredFamilies)) retiredFamilies = data.retiredFamilies;
                     reconcileFamilyMembers(data.familyMembers);
-
-                    // Ensure all family members have RSVP data
-                    familyMembers.forEach(member => {
-                        const defaultCount = defaultGuestCounts[member] || 1;
-                        if (!rsvpData[member]) {
-                            const members = initMembersArray(member);
-                            rsvpData[member] = { status: 'pending', guests: defaultCount, previousGuests: defaultCount, members };
-                        } else {
-                            if (rsvpData[member].previousGuests === undefined) {
-                                rsvpData[member].previousGuests = rsvpData[member].guests || defaultCount;
-                            }
-                            // Ensure members array exists for families that should have them
-                            if (familySubMembers[member] && !rsvpData[member].members) {
-                                rsvpData[member].members = initMembersArray(member);
-                            }
-                        }
-                    });
+                    ensureMembersArrays();
 
                     initializeBringData();
                     updateDisplay();
@@ -987,11 +899,20 @@
         }
         
         function updateDisplay() {
-            // Update date and host
-            document.getElementById('current-date').textContent = getNextFridayNight();
+            // getNextFridayNight() returns "{Event type} - {date}" (or just the
+            // date when it's neither a Friday nor a Saturday). Split it so the
+            // header can show the event type as the title and the date on its
+            // own in the info pill.
+            const eventLine = getNextFridayNight();
+            const dashIdx = eventLine.indexOf(' - ');
+            const eventType = dashIdx > -1 ? eventLine.slice(0, dashIdx) : 'Shabbat Plan';
+            const dateOnly = dashIdx > -1 ? eventLine.slice(dashIdx + 3) : eventLine;
+
+            document.getElementById('current-date').textContent = eventType;
+            document.getElementById('current-date-inline').textContent = dateOnly;
             document.getElementById('current-time').textContent = currentTime || '7:00 PM';
             document.getElementById('current-host').textContent = getCurrentHost();
-            
+
             // Update menu notes
             const notesTextarea = document.getElementById('menu-notes');
             if (notesTextarea) {
@@ -1013,221 +934,403 @@
         // Track which families are expanded
         const expandedFamilies = new Set();
 
-        function buildRsvpBtn(status, onClick, labels) {
-            const btn = document.createElement('button');
-            const labelMap = labels || { coming: 'Coming', 'not-coming': 'Not Coming', pending: 'Not Sure' };
-            btn.className = 'rsvp-btn ' + status;
-            btn.textContent = labelMap[status] || 'Not Sure';
-            btn.addEventListener('click', onClick);
-            return btn;
+        // Which single name field (family, sub-member, guest or guest sub-member)
+        // is currently showing an inline text input instead of static text.
+        // Only one field can be in edit mode at a time.
+        let editingName = null;
+
+        // Keys ("familyName:subIdx" style) of member-level away pickers that are
+        // currently expanded open.
+        const subAwayOpen = new Set();
+
+        function isEditingFamily(member) { return !!editingName && editingName.type === 'family' && editingName.member === member; }
+        function isEditingSub(member, subIdx) { return !!editingName && editingName.type === 'sub' && editingName.member === member && editingName.subIdx === subIdx; }
+        function isEditingGuest(idx) { return !!editingName && editingName.type === 'guest' && editingName.idx === idx; }
+        function isEditingGuestSub(idx, subIdx) { return !!editingName && editingName.type === 'guestSub' && editingName.idx === idx && editingName.subIdx === subIdx; }
+
+        // Builds the shared "editable name" control: a text input + a check
+        // confirm button. Commits on Enter or on tapping check; there is no
+        // cancel action. An optional onRemove shows a small delete button next
+        // to the confirm button (used for removing an individual person while
+        // renaming them, since there's no dedicated delete icon at that level).
+        function appendEditableName(container, currentValue, onCommit, onRemove) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'plan-name-input';
+            input.value = currentValue;
+
+            const commit = () => onCommit(input.value.trim() || currentValue);
+            input.addEventListener('keydown', e => { if (e.key === 'Enter') commit(); });
+
+            const confirmBtn = document.createElement('button');
+            confirmBtn.type = 'button';
+            confirmBtn.className = 'plan-name-confirm';
+            confirmBtn.textContent = '✓';
+            confirmBtn.addEventListener('click', commit);
+
+            container.appendChild(input);
+            container.appendChild(confirmBtn);
+
+            if (onRemove) {
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'plan-name-remove';
+                removeBtn.textContent = '🗑';
+                removeBtn.title = 'Remove this person';
+                removeBtn.addEventListener('click', onRemove);
+                container.appendChild(removeBtn);
+            }
+
+            setTimeout(() => input.focus(), 0);
         }
 
-        const subMemberLabels = { coming: 'Coming', 'not-coming': 'Not Coming', pending: 'Not Sure' };
+        // Builds a family/member-level Yes/No pair. Tapping the already-active
+        // button clears the status back to 'pending'.
+        function appendYesNo(container, status, onSet, small) {
+            const yesBtn = document.createElement('button');
+            yesBtn.type = 'button';
+            yesBtn.className = 'plan-yesno-btn yes' + (status === 'coming' ? ' active' : '') + (small ? ' small' : '');
+            yesBtn.textContent = 'Yes';
+            yesBtn.addEventListener('click', () => onSet('coming'));
 
-        function renderSubMembers(member, memberData) {
-            const container = document.createElement('div');
-            container.className = 'sub-members-list';
+            const noBtn = document.createElement('button');
+            noBtn.type = 'button';
+            noBtn.className = 'plan-yesno-btn no' + (status === 'not-coming' ? ' active' : '') + (small ? ' small' : '');
+            noBtn.textContent = 'No';
+            noBtn.addEventListener('click', () => onSet('not-coming'));
 
-            const members = memberData.members || [];
+            container.appendChild(yesBtn);
+            container.appendChild(noBtn);
+        }
+
+        // Builds the inline Away/Holiday panel shared by the family-level and
+        // per-member expanded views. `compact` renders the smaller member-scoped
+        // variant.
+        function buildAwayPanel(family, subName, compact) {
+            const key = getHolidayKey(family, subName);
+            const existing = holidayData[key];
+            const panel = document.createElement('div');
+            panel.className = 'plan-away-panel' + (compact ? ' compact' : '');
+
+            if (!compact) {
+                const label = document.createElement('div');
+                label.className = 'plan-away-label';
+                label.textContent = 'Away / Holiday';
+                panel.appendChild(label);
+            }
+
+            const emojiRow = document.createElement('div');
+            emojiRow.className = 'plan-away-emojis';
+            holidayEmojiOptions.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'plan-away-emoji-btn' + (existing && existing.emoji === emoji ? ' selected' : '') + (compact ? ' compact' : '');
+                btn.textContent = emoji;
+                btn.addEventListener('click', () => toggleAwayEmoji(family, subName, emoji));
+                emojiRow.appendChild(btn);
+            });
+            panel.appendChild(emojiRow);
+
+            if (existing) {
+                const mode = existing.until === 'indefinite' ? 'indefinite' : 'until';
+                const modeRow = document.createElement('div');
+                modeRow.className = 'plan-away-modes';
+
+                const untilBtn = document.createElement('button');
+                untilBtn.type = 'button';
+                untilBtn.className = 'plan-away-mode-btn' + (mode === 'until' ? ' active' : '') + (compact ? ' compact' : '');
+                untilBtn.textContent = 'Until date';
+                untilBtn.addEventListener('click', () => setAwayMode(family, subName, 'until'));
+
+                const indefBtn = document.createElement('button');
+                indefBtn.type = 'button';
+                indefBtn.className = 'plan-away-mode-btn' + (mode === 'indefinite' ? ' active' : '') + (compact ? ' compact' : '');
+                indefBtn.textContent = 'Indefinitely';
+                indefBtn.addEventListener('click', () => setAwayMode(family, subName, 'indefinite'));
+
+                modeRow.appendChild(untilBtn);
+                modeRow.appendChild(indefBtn);
+                panel.appendChild(modeRow);
+
+                if (mode === 'until') {
+                    const dateInput = document.createElement('input');
+                    dateInput.type = 'date';
+                    dateInput.className = 'plan-away-date-input';
+                    dateInput.value = existing.until && existing.until !== 'indefinite' ? existing.until : '';
+                    dateInput.addEventListener('change', e => setAwayUntilDate(family, subName, e.target.value));
+                    panel.appendChild(dateInput);
+                }
+
+                const summary = document.createElement('div');
+                summary.className = 'plan-away-summary';
+                summary.textContent = mode === 'indefinite'
+                    ? 'Away indefinitely'
+                    : (existing.until ? ('Away until ' + existing.until) : 'Pick a return date');
+                panel.appendChild(summary);
+            }
+
+            return panel;
+        }
+
+        function toggleExpand(key) {
+            if (expandedFamilies.has(key)) expandedFamilies.delete(key);
+            else expandedFamilies.add(key);
+            updateRSVPList();
+        }
+
+        function toggleSubAwayOpen(key) {
+            if (subAwayOpen.has(key)) subAwayOpen.delete(key);
+            else subAwayOpen.add(key);
+            updateRSVPList();
+        }
+
+        // Chevron button whose glyph (not the whole button) rotates when expanded.
+        function appendChevron(container, isExpanded, onClick) {
+            const chevron = document.createElement('button');
+            chevron.type = 'button';
+            chevron.className = 'plan-chevron';
+            chevron.addEventListener('click', onClick);
+            const glyph = document.createElement('span');
+            glyph.className = 'plan-chevron-glyph' + (isExpanded ? ' expanded' : '');
+            glyph.textContent = '›';
+            chevron.appendChild(glyph);
+            container.appendChild(chevron);
+        }
+
+        // Renders one member row inside an expanded family/guest panel.
+        // `holidayFamily` is the top-level family name to key away-status
+        // lookups against, or null for guest entries (which have no away option).
+        function buildMemberRow(sub, subIdx, holidayFamily, awayOpenKey, editHandlers, onSetStatus) {
+            const row = document.createElement('div');
+            row.className = 'plan-member-row';
+
+            const inner = document.createElement('div');
+            inner.className = 'plan-member-inner';
+
+            const nameArea = document.createElement('div');
+            nameArea.className = 'plan-member-name-area';
+            if (editHandlers.isEditing) {
+                appendEditableName(nameArea, sub.name, editHandlers.onCommit, editHandlers.onRemove);
+            } else {
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'plan-member-name';
+                nameSpan.textContent = sub.name;
+                const editBtn = document.createElement('button');
+                editBtn.type = 'button';
+                editBtn.className = 'plan-edit-btn';
+                editBtn.textContent = '✎';
+                editBtn.title = 'Rename ' + sub.name;
+                editBtn.addEventListener('click', editHandlers.onStart);
+                nameArea.appendChild(nameSpan);
+                nameArea.appendChild(editBtn);
+            }
+            inner.appendChild(nameArea);
+
+            if (holidayFamily) {
+                const hasAway = !!holidayData[getHolidayKey(holidayFamily, sub.name)];
+                const awayBtn = document.createElement('button');
+                awayBtn.type = 'button';
+                awayBtn.className = 'plan-member-away-toggle' + (hasAway ? ' set' : '');
+                awayBtn.textContent = hasAway ? getHolidayEmoji(holidayFamily, sub.name) : '+';
+                awayBtn.title = hasAway ? getHolidayLabel(holidayFamily, sub.name) : 'Set away status';
+                awayBtn.addEventListener('click', () => toggleSubAwayOpen(awayOpenKey));
+                inner.appendChild(awayBtn);
+            }
+
+            appendYesNo(inner, sub.status || 'pending', onSetStatus, true);
+            row.appendChild(inner);
+
+            if (holidayFamily && subAwayOpen.has(awayOpenKey)) {
+                row.appendChild(buildAwayPanel(holidayFamily, sub.name, true));
+            }
+
+            return row;
+        }
+
+        // Renders the expanded panel (away section + member list + add-person
+        // link) shared by real families and additional guests.
+        function buildExpandedPanel(members, holidayFamily, awayKeyPrefix, memberHandlers, onAddPerson) {
+            const panel = document.createElement('div');
+            panel.className = 'plan-expand-panel';
+
+            if (holidayFamily) {
+                panel.appendChild(buildAwayPanel(holidayFamily, null, false));
+            }
+
             members.forEach((sub, subIdx) => {
-                const row = document.createElement('div');
-                row.className = 'sub-member-row';
-
-                const name = document.createElement('span');
-                name.className = 'sub-member-name editable';
-                name.textContent = sub.name;
-                name.title = 'Tap to rename';
-                name.addEventListener('click', () => editSubMember(member, subIdx));
-
-                const subOnHol = isOnHoliday(member, sub.name);
-                const holBtn = document.createElement('button');
-                holBtn.className = 'sub-member-holiday' + (subOnHol ? ' on-holiday' : '');
-                holBtn.textContent = getHolidayEmoji(member, sub.name);
-                holBtn.title = subOnHol ? getHolidayLabel(member, sub.name) : 'Set holiday';
-                holBtn.addEventListener('click', () => showHolidayModal(member, sub.name));
-
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'sub-member-remove';
-                removeBtn.textContent = '×';
-                removeBtn.title = 'Remove ' + sub.name;
-                removeBtn.addEventListener('click', () => removeSubMember(member, subIdx));
-
-                const st = sub.status || 'pending';
-                const toggle = document.createElement('button');
-                toggle.className = 'sub-member-toggle ' + st;
-                toggle.textContent = subMemberLabels[st];
-                toggle.addEventListener('click', () => toggleSubMember(member, subIdx));
-
-                row.appendChild(name);
-                row.appendChild(holBtn);
-                row.appendChild(removeBtn);
-                row.appendChild(toggle);
-                container.appendChild(row);
+                const handlers = memberHandlers(subIdx);
+                panel.appendChild(buildMemberRow(sub, subIdx, holidayFamily, awayKeyPrefix + ':' + subIdx, handlers.edit, handlers.setStatus));
             });
 
-            // Add member button
             const addRow = document.createElement('div');
-            addRow.className = 'sub-member-row sub-member-add';
+            addRow.className = 'plan-add-person-row';
             const addBtn = document.createElement('button');
-            addBtn.className = 'sub-member-add-btn';
+            addBtn.type = 'button';
+            addBtn.className = 'plan-add-person-btn';
             addBtn.textContent = '+ Add person';
-            addBtn.addEventListener('click', () => addSubMember(member));
+            addBtn.addEventListener('click', onAddPerson);
             addRow.appendChild(addBtn);
-            container.appendChild(addRow);
+            panel.appendChild(addRow);
 
-            return container;
+            return panel;
         }
 
         function updateRSVPList() {
             const rsvpContainer = document.getElementById('rsvp-list');
             rsvpContainer.innerHTML = '';
+            const resolvedHost = getCurrentHost();
 
-            // Display family members
+            // Real families
             familyMembers.forEach(member => {
-                const memberData = rsvpData[member];
-                const wrapper = document.createElement('div');
-                wrapper.className = 'rsvp-family-wrapper';
-
-                const rsvpRow = document.createElement('div');
-                rsvpRow.className = 'rsvp-grid';
-
-                // Family name with expand arrow (all families are expandable so
-                // individual people can be added, renamed or removed)
-                const nameDiv = document.createElement('div');
-                nameDiv.className = 'family-member';
+                const data = rsvpData[member];
+                const isHost = member === resolvedHost || (data.members && data.members.some(m => m.name === resolvedHost));
                 const isExpanded = expandedFamilies.has(member);
+                const hasAway = !!holidayData[getHolidayKey(member, null)];
 
-                const arrow = document.createElement('span');
-                arrow.className = 'expand-arrow' + (isExpanded ? ' expanded' : '');
-                arrow.textContent = '\u25B6';
-                nameDiv.appendChild(arrow);
-
-                const nameText = document.createTextNode(member);
-                nameDiv.appendChild(nameText);
-
-                const editNameBtn = document.createElement('button');
-                editNameBtn.className = 'edit-name-btn';
-                editNameBtn.textContent = '\u270E';
-                editNameBtn.title = 'Rename ' + member;
-                editNameBtn.addEventListener('click', (e) => { e.stopPropagation(); editFamilyName(member); });
-                nameDiv.appendChild(editNameBtn);
-
-                nameDiv.style.cursor = 'pointer';
-                nameDiv.addEventListener('click', () => {
-                    if (expandedFamilies.has(member)) expandedFamilies.delete(member);
-                    else expandedFamilies.add(member);
-                    updateRSVPList();
-                });
-
-                const holidayBtn = document.createElement('button');
-                const onHol = isOnHoliday(member);
-                holidayBtn.className = 'holiday-btn' + (onHol ? ' on-holiday' : '');
-                holidayBtn.textContent = getHolidayEmoji(member);
-                holidayBtn.title = onHol ? getHolidayLabel(member) : 'Set holiday';
-                holidayBtn.addEventListener('click', (e) => { e.stopPropagation(); showHolidayModal(member); });
-
-                const countSpan = document.createElement('span');
-                countSpan.className = 'guest-count-num';
-                countSpan.textContent = memberData.guests || 0;
-
-                const btn = buildRsvpBtn(memberData.status, () => toggleRSVP(member));
-
-                rsvpRow.appendChild(nameDiv);
-                rsvpRow.appendChild(holidayBtn);
-                rsvpRow.appendChild(countSpan);
-                rsvpRow.appendChild(btn);
-                wrapper.appendChild(rsvpRow);
-
-                // Sub-members (expanded)
-                if (isExpanded) {
-                    wrapper.appendChild(renderSubMembers(member, memberData));
-                }
-
-                rsvpContainer.appendChild(wrapper);
-            });
-
-            // Display additional guests
-            additionalGuests.forEach((guest, index) => {
                 const wrapper = document.createElement('div');
-                wrapper.className = 'rsvp-family-wrapper';
+                wrapper.className = 'plan-family-wrapper';
 
-                const rsvpRow = document.createElement('div');
-                rsvpRow.className = 'rsvp-grid';
+                const row = document.createElement('div');
+                row.className = 'plan-family-row' + (isHost ? ' host' : '');
 
-                const nameDiv = document.createElement('div');
-                nameDiv.className = 'family-member guest-row';
-                const isExpanded = expandedFamilies.has('guest-' + index);
+                const nameArea = document.createElement('div');
+                nameArea.className = 'plan-name-area';
+                if (isEditingFamily(member)) {
+                    appendEditableName(nameArea, member, value => commitFamilyNameEdit(member, value));
+                } else {
+                    const nameText = document.createElement('div');
+                    nameText.className = 'plan-name-text';
+                    nameText.addEventListener('click', () => toggleExpand(member));
+                    nameText.appendChild(document.createTextNode(member));
+                    const countSpan = document.createElement('span');
+                    countSpan.className = 'plan-guest-count';
+                    countSpan.textContent = ' · ' + (data.guests || 0);
+                    nameText.appendChild(countSpan);
+                    if (isHost) {
+                        const badge = document.createElement('span');
+                        badge.className = 'plan-hosting-badge';
+                        badge.textContent = 'HOSTING';
+                        badge.title = 'Change host';
+                        badge.addEventListener('click', e => { e.stopPropagation(); editHost(); });
+                        nameText.appendChild(badge);
+                    }
+                    nameArea.appendChild(nameText);
 
-                const arrow = document.createElement('span');
-                arrow.className = 'expand-arrow' + (isExpanded ? ' expanded' : '');
-                arrow.textContent = '\u25B6';
-                nameDiv.appendChild(arrow);
+                    const editBtn = document.createElement('button');
+                    editBtn.type = 'button';
+                    editBtn.className = 'plan-edit-btn';
+                    editBtn.title = 'Rename ' + member;
+                    editBtn.textContent = '✎';
+                    editBtn.addEventListener('click', e => { e.stopPropagation(); startEditFamilyName(member); });
+                    nameArea.appendChild(editBtn);
+                }
+                row.appendChild(nameArea);
 
-                const nameText = document.createTextNode(guest.name);
-                nameDiv.appendChild(nameText);
+                if (hasAway) {
+                    const badge = document.createElement('span');
+                    badge.className = 'plan-holiday-badge';
+                    badge.textContent = getHolidayEmoji(member);
+                    row.appendChild(badge);
+                }
 
-                const label = document.createElement('span');
-                label.className = 'guest-label';
-                label.textContent = '(guest)';
-                nameDiv.appendChild(label);
+                appendYesNo(row, data.status, status => setFamilyStatus(member, status), false);
+                appendChevron(row, isExpanded, () => toggleExpand(member));
 
-                const editNameBtn = document.createElement('button');
-                editNameBtn.className = 'edit-name-btn';
-                editNameBtn.textContent = '\u270E';
-                editNameBtn.title = 'Rename ' + guest.name;
-                editNameBtn.addEventListener('click', (e) => { e.stopPropagation(); editGuestName(index); });
-                nameDiv.appendChild(editNameBtn);
+                wrapper.appendChild(row);
 
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-guest-btn';
-                removeBtn.textContent = '\u00D7';
-                removeBtn.addEventListener('click', (e) => { e.stopPropagation(); removeAdditionalGuest(index); });
-                nameDiv.appendChild(removeBtn);
-
-                nameDiv.style.cursor = 'pointer';
-                nameDiv.addEventListener('click', () => {
-                    const key = 'guest-' + index;
-                    if (expandedFamilies.has(key)) expandedFamilies.delete(key);
-                    else expandedFamilies.add(key);
-                    updateRSVPList();
-                });
-
-                const holPlaceholder = document.createElement('span');
-
-                const guestCountSpan = document.createElement('span');
-                guestCountSpan.className = 'guest-count-num';
-                guestCountSpan.textContent = guest.guests || 0;
-
-                const btn = buildRsvpBtn(
-                    guest.status || 'pending',
-                    () => toggleAdditionalGuestStatus(index)
-                );
-
-                rsvpRow.appendChild(nameDiv);
-                rsvpRow.appendChild(holPlaceholder);
-                rsvpRow.appendChild(guestCountSpan);
-                rsvpRow.appendChild(btn);
-                wrapper.appendChild(rsvpRow);
-
-                // Sub-members for additional guests
                 if (isExpanded) {
-                    wrapper.appendChild(renderSubMembersForGuest(index, guest));
+                    wrapper.appendChild(buildExpandedPanel(
+                        data.members || [],
+                        member,
+                        member,
+                        subIdx => ({
+                            edit: {
+                                isEditing: isEditingSub(member, subIdx),
+                                onStart: () => startEditSubName(member, subIdx),
+                                onCommit: value => commitSubNameEdit(member, subIdx, value),
+                                onRemove: (data.members || []).length > 1 ? () => removeSubMember(member, subIdx) : null
+                            },
+                            setStatus: status => setSubMemberStatus(member, subIdx, status)
+                        }),
+                        () => addSubMember(member)
+                    ));
                 }
 
                 rsvpContainer.appendChild(wrapper);
             });
 
-            // Add "Add Guests" button at the bottom
-            const addGuestsDiv = document.createElement('div');
-            addGuestsDiv.className = 'add-guests-container';
-            const addBtn = document.createElement('button');
-            addBtn.className = 'edit-btn add-guests-btn';
-            addBtn.textContent = '+ Add Guests';
-            addBtn.addEventListener('click', showAddGuestsModal);
-            addGuestsDiv.appendChild(addBtn);
-            rsvpContainer.appendChild(addGuestsDiv);
+            // Additional guests (added via "+ Add guests")
+            additionalGuests.forEach((guest, idx) => {
+                const key = 'guest-' + idx;
+                const isExpanded = expandedFamilies.has(key);
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'plan-family-wrapper';
+
+                const row = document.createElement('div');
+                row.className = 'plan-family-row';
+
+                const nameArea = document.createElement('div');
+                nameArea.className = 'plan-name-area';
+                if (isEditingGuest(idx)) {
+                    appendEditableName(nameArea, guest.name, value => commitGuestNameEdit(idx, value));
+                } else {
+                    const nameText = document.createElement('div');
+                    nameText.className = 'plan-name-text';
+                    nameText.addEventListener('click', () => toggleExpand(key));
+                    nameText.appendChild(document.createTextNode(guest.name));
+                    const countSpan = document.createElement('span');
+                    countSpan.className = 'plan-guest-count';
+                    countSpan.textContent = ' · ' + (guest.guests || 0);
+                    nameText.appendChild(countSpan);
+                    nameArea.appendChild(nameText);
+
+                    const editBtn = document.createElement('button');
+                    editBtn.type = 'button';
+                    editBtn.className = 'plan-edit-btn';
+                    editBtn.title = 'Rename ' + guest.name;
+                    editBtn.textContent = '✎';
+                    editBtn.addEventListener('click', e => { e.stopPropagation(); startEditGuestName(idx); });
+                    nameArea.appendChild(editBtn);
+                }
+                row.appendChild(nameArea);
+
+                appendYesNo(row, guest.status || 'pending', status => setGuestStatus(idx, status), false);
+                appendChevron(row, isExpanded, () => toggleExpand(key));
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.type = 'button';
+                deleteBtn.className = 'plan-delete-btn';
+                deleteBtn.textContent = '🗑';
+                deleteBtn.title = 'Remove ' + guest.name;
+                deleteBtn.addEventListener('click', e => { e.stopPropagation(); removeAdditionalGuest(idx); });
+                row.appendChild(deleteBtn);
+
+                wrapper.appendChild(row);
+
+                if (isExpanded) {
+                    wrapper.appendChild(buildExpandedPanel(
+                        guest.members || [],
+                        null,
+                        key,
+                        subIdx => ({
+                            edit: {
+                                isEditing: isEditingGuestSub(idx, subIdx),
+                                onStart: () => startEditGuestSubName(idx, subIdx),
+                                onCommit: value => commitGuestSubNameEdit(idx, subIdx, value),
+                                onRemove: (guest.members || []).length > 1 ? () => removeGuestSubMember(idx, subIdx) : null
+                            },
+                            setStatus: status => setGuestSubStatus(idx, subIdx, status)
+                        }),
+                        () => addSubMemberToGuest(idx)
+                    ));
+                }
+
+                rsvpContainer.appendChild(wrapper);
+            });
         }
-        
+
+
         function syncMembersToGuests(member) {
             const data = rsvpData[member];
             if (data.members && data.members.length > 0) {
@@ -1245,55 +1348,44 @@
             return 'pending';
         }
 
-        function toggleRSVP(member) {
-            const current = rsvpData[member].status;
+        // Setting a family's Yes/No sets that status for the whole family and
+        // cascades it to every member (except members who are individually away,
+        // whose own away status takes precedence). Tapping the already-active
+        // button clears back to 'pending'. The reverse is not automatic: members
+        // can then be set individually.
+        function setFamilyStatus(member, status) {
+            const data = rsvpData[member];
             const defaultCount = defaultGuestCounts[member] || 1;
-            let newStatus;
+            const newStatus = data.status === status ? 'pending' : status;
+            data.status = newStatus;
 
-            if (current === 'pending') {
-                newStatus = 'coming';
-            } else if (current === 'coming') {
-                newStatus = 'not-coming';
-            } else {
-                newStatus = 'pending';
-            }
-
-            rsvpData[member].status = newStatus;
-
-            if (rsvpData[member].members) {
-                rsvpData[member].members.forEach(m => {
-                    // Don't override status for individuals who are on holiday
+            if (data.members) {
+                data.members.forEach(m => {
                     if (newStatus !== 'not-coming' && isOnHoliday(member, m.name)) return;
                     m.status = newStatus;
                 });
-                // Re-derive parent status in case some members stayed not-coming due to holiday
-                rsvpData[member].status = deriveParentStatus(rsvpData[member].members);
+                data.status = deriveParentStatus(data.members);
                 syncMembersToGuests(member);
             }
 
-            if (rsvpData[member].status === 'not-coming') {
-                rsvpData[member].previousGuests = rsvpData[member].guests || defaultCount;
-                rsvpData[member].guests = 0;
-            } else if (rsvpData[member].status === 'coming') {
-                if (rsvpData[member].members) {
-                    syncMembersToGuests(member);
-                } else {
-                    rsvpData[member].guests = rsvpData[member].previousGuests || defaultCount;
-                }
+            if (data.status === 'not-coming') {
+                data.previousGuests = data.guests || defaultCount;
+                data.guests = 0;
+            } else if (data.status === 'coming') {
+                if (data.members) syncMembersToGuests(member);
+                else data.guests = data.previousGuests || defaultCount;
             } else {
-                rsvpData[member].guests = rsvpData[member].previousGuests || defaultCount;
+                data.guests = data.previousGuests || defaultCount;
             }
 
             updateDisplay();
             saveStateToFirebase();
         }
 
-        function toggleSubMember(member, subIdx) {
+        function setSubMemberStatus(member, subIdx, status) {
             const data = rsvpData[member];
             const current = data.members[subIdx].status;
-            if (current === 'pending') data.members[subIdx].status = 'coming';
-            else if (current === 'coming') data.members[subIdx].status = 'not-coming';
-            else data.members[subIdx].status = 'pending';
+            data.members[subIdx].status = current === status ? 'pending' : status;
 
             data.status = deriveParentStatus(data.members);
             syncMembersToGuests(member);
@@ -1322,6 +1414,13 @@
             if (rsvpData[oldName]) {
                 rsvpData[newName] = rsvpData[oldName];
                 delete rsvpData[oldName];
+            }
+
+            // Carry the default guest count over under the new name so that
+            // status changes after a rename still fall back to the family's
+            // real default instead of the generic 1-guest fallback.
+            if (defaultGuestCounts[oldName] !== undefined) {
+                defaultGuestCounts[newName] = defaultGuestCounts[oldName];
             }
 
             const idx = familyMembers.indexOf(oldName);
@@ -1359,11 +1458,15 @@
             });
         }
 
-        async function editFamilyName(member) {
-            const newName = await showPrompt('Rename family', member);
-            if (!newName || newName === member) return;
+        function startEditFamilyName(member) { editingName = { type: 'family', member }; updateRSVPList(); }
+        function startEditSubName(member, subIdx) { editingName = { type: 'sub', member, subIdx }; updateRSVPList(); }
+
+        function commitFamilyNameEdit(member, newName) {
+            editingName = null;
+            if (!newName || newName === member) { updateRSVPList(); return; }
             if (familyMembers.includes(newName) || rsvpData[newName]) {
                 showToast('A family with that name already exists');
+                updateRSVPList();
                 return;
             }
             renameFamilyKey(member, newName);
@@ -1372,16 +1475,16 @@
             saveHolidaysToFirebase();
         }
 
-        async function editSubMember(member, subIdx) {
+        function commitSubNameEdit(member, subIdx, newName) {
+            editingName = null;
             const d = rsvpData[member];
-            if (!d || !d.members || !d.members[subIdx]) return;
+            if (!d || !d.members || !d.members[subIdx]) { updateRSVPList(); return; }
             const oldName = d.members[subIdx].name;
-            const newName = await showPrompt('Rename person', oldName);
-            if (!newName || newName === oldName) return;
+            if (!newName || newName === oldName) { updateRSVPList(); return; }
 
             d.members[subIdx].name = newName;
 
-            // Migrate any holiday set on this specific person
+            // Migrate any away status set on this specific person
             const oldKey = getHolidayKey(member, oldName);
             const newKey = getHolidayKey(member, newName);
             if (holidayData[oldKey]) {
@@ -1401,7 +1504,7 @@
             const yes = await showConfirm('Remove Person', 'Remove ' + person + ' from ' + member + '?');
             if (!yes) return;
 
-            // Clear any holiday set on this person
+            // Clear any away status set on this person
             const key = getHolidayKey(member, person);
             if (holidayData[key]) {
                 delete holidayData[key];
@@ -1414,10 +1517,10 @@
                 syncMembersToGuests(member);
                 if (d.status === 'not-coming') d.guests = 0;
             } else {
-                // No individuals left – revert to a clean, neutral family entry
-                // rather than leaving stale status/count from when members existed.
+                // No individuals left -- fall back to a single self-named member
+                // rather than an empty list, matching every other family's shape.
                 const defaultCount = defaultGuestCounts[member] || 1;
-                d.members = null;
+                d.members = [{ name: member, status: 'pending' }];
                 d.status = 'pending';
                 d.guests = defaultCount;
                 d.previousGuests = defaultCount;
@@ -1431,27 +1534,38 @@
             const familyGuests = familyMembers
                 .filter(member => rsvpData[member].status === 'coming')
                 .reduce((sum, member) => sum + rsvpData[member].guests, 0);
-            
+
             const additionalGuestsTotal = additionalGuests
                 .filter(g => g.status === 'coming')
                 .reduce((sum, guest) => sum + (guest.guests || 1), 0);
-            
+
             const totalGuests = familyGuests + additionalGuestsTotal;
-            
+
             const comingCount = familyMembers
-                .filter(member => rsvpData[member].status === 'coming').length;
-            
+                .filter(member => rsvpData[member].status === 'coming').length
+                + additionalGuests.filter(g => g.status === 'coming').length;
+
             const pendingCount = familyMembers
-                .filter(member => rsvpData[member].status === 'pending').length;
-            
-            const additionalGuestsCount = additionalGuests.filter(g => g.status === 'coming').length;
-            
-            document.getElementById('guest-summary').innerHTML = `
-                <strong>${totalGuests} guests total</strong>
-                <span class="summary-details">${comingCount} families confirmed${pendingCount > 0 ? ` (${pendingCount} pending)` : ''}${additionalGuestsCount > 0 ? ` • ${additionalGuestsCount} additional ${additionalGuestsCount === 1 ? 'guest' : 'guests'}` : ''}</span>
-            `;
+                .filter(member => rsvpData[member].status === 'pending').length
+                + additionalGuests.filter(g => (g.status || 'pending') === 'pending').length;
+
+            const summaryEl = document.getElementById('guest-summary');
+            summaryEl.innerHTML = '';
+
+            const text = document.createElement('div');
+            text.className = 'plan-summary-text';
+            text.textContent = `${comingCount} confirmed · ${totalGuests} guests · ${pendingCount} pending`;
+
+            const addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.className = 'plan-add-guests-link';
+            addBtn.textContent = '+ Add guests';
+            addBtn.addEventListener('click', addGuestInline);
+
+            summaryEl.appendChild(text);
+            summaryEl.appendChild(addBtn);
         }
-        
+
         function updateBringList() {
             const bringContainer = document.getElementById('bring-list');
             bringContainer.innerHTML = '';
@@ -1465,55 +1579,55 @@
                         </button>
                     </div>
                 `;
-            } else {
-                bringItems.forEach(item => {
-                    const itemData = bringData[item];
-                    const itemRow = document.createElement('div');
-                    itemRow.className = 'bring-item';
-
-                    const nameDiv = document.createElement('div');
-                    nameDiv.className = 'item-name';
-                    nameDiv.textContent = item;
-                    nameDiv.addEventListener('click', () => editItemName(item));
-
-                    const statusDiv = document.createElement('div');
-                    statusDiv.className = 'item-status ' + (itemData.assigned ? 'item-covered' : 'item-needed');
-                    statusDiv.textContent = itemData.assigned ? ('✓ ' + itemData.person) : 'Tap to claim';
-                    statusDiv.addEventListener('click', () => claimItem(item));
-
-                    itemRow.appendChild(nameDiv);
-                    itemRow.appendChild(statusDiv);
-                    bringContainer.appendChild(itemRow);
-                });
+                return;
             }
-        }
-        
-        function claimItem(item) {
-            // Show selection modal
-            document.getElementById('modal-title').textContent = `Who will bring ${item}?`;
-            const personList = document.getElementById('person-list');
-            personList.innerHTML = '';
-            
-            familyMembers.forEach(person => {
-                const btn = document.createElement('button');
-                btn.className = 'person-btn';
-                btn.textContent = person;
-                btn.onclick = () => {
-                    bringData[item] = { assigned: true, person: person };
-                    updateBringList();
-                    closeModal();
-                    saveStateToFirebase();
-                };
-                personList.appendChild(btn);
+
+            const allNames = familyMembers.concat(additionalGuests.map(g => g.name));
+
+            bringItems.forEach(item => {
+                const itemData = bringData[item];
+                const covered = !!(itemData && itemData.assigned);
+
+                const itemRow = document.createElement('div');
+                itemRow.className = 'plan-menu-item-card';
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'plan-menu-item-name';
+                nameDiv.textContent = item;
+                nameDiv.title = 'Tap to rename';
+                nameDiv.addEventListener('click', () => editItemName(item));
+
+                const select = document.createElement('select');
+                select.className = 'plan-menu-select' + (covered ? ' covered' : ' needed');
+                const blankOpt = document.createElement('option');
+                blankOpt.value = '';
+                blankOpt.textContent = 'Needed';
+                select.appendChild(blankOpt);
+                allNames.forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    if (covered && itemData.person === name) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                select.addEventListener('change', e => assignItem(item, e.target.value));
+
+                itemRow.appendChild(nameDiv);
+                itemRow.appendChild(select);
+                bringContainer.appendChild(itemRow);
             });
-            
-            document.getElementById('selection-modal').style.display = 'flex';
         }
-        
-        function closeModal() {
-            document.getElementById('selection-modal').style.display = 'none';
+
+        function assignItem(item, person) {
+            if (!person) {
+                bringData[item] = { assigned: false, person: null };
+            } else {
+                bringData[item] = { assigned: true, person };
+            }
+            updateBringList();
+            saveStateToFirebase();
         }
-        
+
         function editItems() {
             updateEditList();
             document.getElementById('edit-modal').style.display = 'flex';
@@ -1703,99 +1817,28 @@
             arrow.classList.toggle('collapsed');
         }
         
-        function addGuestMemberRow(value) {
-            const container = document.getElementById('guest-members-container');
-            const row = document.createElement('div');
-            row.className = 'guest-member-row';
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'guest-input guest-member-input';
-            input.placeholder = 'Family member name...';
-            if (value) input.value = value;
-            input.onkeypress = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addGuestMemberRow();
-                }
-            };
-
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'guest-member-remove';
-            removeBtn.textContent = '×';
-            removeBtn.title = 'Remove this person';
-            removeBtn.onclick = () => row.remove();
-
-            row.appendChild(input);
-            row.appendChild(removeBtn);
-            container.appendChild(row);
-            input.focus();
-        }
-
-        function showAddGuestsModal() {
-            document.getElementById('guest-name-input').value = '';
-            const container = document.getElementById('guest-members-container');
-            container.innerHTML = '';
-            // Start with one empty member row so the pattern is obvious
-            addGuestMemberRow();
-            document.getElementById('guest-name-input').focus();
-            document.getElementById('guests-modal').style.display = 'flex';
-        }
-
-        function closeGuestsModal() {
-            document.getElementById('guests-modal').style.display = 'none';
-        }
-
-        function addGuest() {
-            const nameInput = document.getElementById('guest-name-input');
-            const guestName = nameInput.value.trim();
-            if (!guestName) {
-                showToast('Please enter a family name');
-                nameInput.focus();
-                return;
-            }
-
-            const memberInputs = document.querySelectorAll('#guest-members-container .guest-member-input');
-            const names = Array.from(memberInputs)
-                .map(i => i.value.trim())
-                .filter(Boolean);
-
-            let members = null;
-            let guestCount = 1;
-            if (names.length > 0) {
-                members = names.map(name => ({ name, status: 'coming' }));
-                guestCount = names.length;
-            }
-
+        // Appends a new "New Guest" entry, opens its name field for editing and
+        // auto-expands it, replacing the old multi-field "Add Guests" modal with
+        // a single tap followed by inline rename.
+        function addGuestInline() {
             additionalGuests.push({
-                name: guestName,
-                status: 'coming',
-                guests: guestCount,
-                previousGuests: guestCount,
-                members
+                name: 'New Guest',
+                status: 'pending',
+                guests: 1,
+                previousGuests: 1,
+                members: [{ name: 'New Guest', status: 'pending' }]
             });
-
-            closeGuestsModal();
-
-            // Auto-expand if it has named members
-            if (members && members.length > 0) {
-                expandedFamilies.add('guest-' + (additionalGuests.length - 1));
-            }
-
+            const idx = additionalGuests.length - 1;
+            expandedFamilies.add('guest-' + idx);
+            editingName = { type: 'guest', idx };
             updateRSVPList();
             updateGuestSummary();
             saveStateToFirebase();
         }
 
-        function toggleAdditionalGuestStatus(index) {
-            const guest = additionalGuests[index];
-            let newStatus;
-
-            if (guest.status === 'pending' || !guest.status) newStatus = 'coming';
-            else if (guest.status === 'coming') newStatus = 'not-coming';
-            else newStatus = 'pending';
-
+        function setGuestStatus(idx, status) {
+            const guest = additionalGuests[idx];
+            const newStatus = (guest.status || 'pending') === status ? 'pending' : status;
             guest.status = newStatus;
             if (guest.members) {
                 guest.members.forEach(m => m.status = newStatus);
@@ -1807,19 +1850,15 @@
                 guest.guests = guest.previousGuests || 1;
             }
 
-            if (newStatus === 'not-coming') guest.guests = 0;
-
             updateRSVPList();
             updateGuestSummary();
             saveStateToFirebase();
         }
 
-        function toggleAdditionalGuestSubMember(guestIdx, subIdx) {
+        function setGuestSubStatus(guestIdx, subIdx, status) {
             const guest = additionalGuests[guestIdx];
             const current = guest.members[subIdx].status;
-            if (current === 'pending') guest.members[subIdx].status = 'coming';
-            else if (current === 'coming') guest.members[subIdx].status = 'not-coming';
-            else guest.members[subIdx].status = 'pending';
+            guest.members[subIdx].status = current === status ? 'pending' : status;
 
             guest.status = deriveParentStatus(guest.members);
             guest.guests = guest.members.filter(m => m.status === 'coming').length;
@@ -1844,23 +1883,25 @@
             }
         }
 
-        async function editGuestName(guestIdx) {
-            const guest = additionalGuests[guestIdx];
-            if (!guest) return;
-            const newName = await showPrompt('Rename guest', guest.name);
-            if (!newName || newName === guest.name) return;
+        function startEditGuestName(idx) { editingName = { type: 'guest', idx }; updateRSVPList(); }
+        function startEditGuestSubName(idx, subIdx) { editingName = { type: 'guestSub', idx, subIdx }; updateRSVPList(); }
+
+        function commitGuestNameEdit(idx, newName) {
+            editingName = null;
+            const guest = additionalGuests[idx];
+            if (!guest || !newName || newName === guest.name) { updateRSVPList(); return; }
             guest.name = newName;
             updateRSVPList();
             updateGuestSummary();
             saveStateToFirebase();
         }
 
-        async function editGuestSubMember(guestIdx, subIdx) {
+        function commitGuestSubNameEdit(guestIdx, subIdx, newName) {
+            editingName = null;
             const guest = additionalGuests[guestIdx];
-            if (!guest || !guest.members || !guest.members[subIdx]) return;
+            if (!guest || !guest.members || !guest.members[subIdx]) { updateRSVPList(); return; }
             const oldName = guest.members[subIdx].name;
-            const newName = await showPrompt('Rename person', oldName);
-            if (!newName || newName === oldName) return;
+            if (!newName || newName === oldName) { updateRSVPList(); return; }
             guest.members[subIdx].name = newName;
             updateRSVPList();
             updateGuestSummary();
@@ -1880,65 +1921,17 @@
                 guest.guests = guest.members.filter(m => m.status === 'coming').length;
                 if (guest.status === 'not-coming') guest.guests = 0;
             } else {
-                // No named members left – treat as a single flat guest entry
-                // rather than carrying over the old member count.
-                guest.members = null;
-                guest.guests = guest.status === 'not-coming' ? 0 : 1;
+                // No named members left -- fall back to a single self-named
+                // member rather than an empty list.
+                guest.members = [{ name: guest.name, status: 'pending' }];
+                guest.status = 'pending';
+                guest.guests = 1;
                 guest.previousGuests = 1;
             }
 
             updateRSVPList();
             updateGuestSummary();
             saveStateToFirebase();
-        }
-
-        function renderSubMembersForGuest(guestIdx, guest) {
-            const container = document.createElement('div');
-            container.className = 'sub-members-list';
-
-            const members = guest.members || [];
-            members.forEach((sub, subIdx) => {
-                const row = document.createElement('div');
-                row.className = 'sub-member-row';
-
-                const name = document.createElement('span');
-                name.className = 'sub-member-name editable';
-                name.textContent = sub.name;
-                name.title = 'Tap to rename';
-                name.addEventListener('click', () => editGuestSubMember(guestIdx, subIdx));
-
-                // Placeholder for holiday column (guests don't have holidays)
-                const holPlaceholder = document.createElement('span');
-
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'sub-member-remove';
-                removeBtn.textContent = '×';
-                removeBtn.title = 'Remove ' + sub.name;
-                removeBtn.addEventListener('click', () => removeGuestSubMember(guestIdx, subIdx));
-
-                const st = sub.status || 'pending';
-                const toggle = document.createElement('button');
-                toggle.className = 'sub-member-toggle ' + st;
-                toggle.textContent = subMemberLabels[st];
-                toggle.addEventListener('click', () => toggleAdditionalGuestSubMember(guestIdx, subIdx));
-
-                row.appendChild(name);
-                row.appendChild(holPlaceholder);
-                row.appendChild(removeBtn);
-                row.appendChild(toggle);
-                container.appendChild(row);
-            });
-
-            const addRow = document.createElement('div');
-            addRow.className = 'sub-member-row sub-member-add';
-            const addBtn = document.createElement('button');
-            addBtn.className = 'sub-member-add-btn';
-            addBtn.textContent = '+ Add person';
-            addBtn.addEventListener('click', () => addSubMemberToGuest(guestIdx));
-            addRow.appendChild(addBtn);
-            container.appendChild(addRow);
-
-            return container;
         }
 
         async function removeAdditionalGuest(index) {
@@ -2068,26 +2061,18 @@
         initializeApp();
         
         // Close modals when clicking outside
-        document.getElementById('selection-modal').onclick = function(e) {
-            if (e.target === this) closeModal();
-        }
-        
         document.getElementById('edit-modal').onclick = function(e) {
             if (e.target === this) closeEditModal();
         }
-        
+
         document.getElementById('host-modal').onclick = function(e) {
             if (e.target === this) closeHostModal();
         }
-        
+
         document.getElementById('date-modal').onclick = function(e) {
             if (e.target === this) closeDateModal();
         }
-        
-        document.getElementById('guests-modal').onclick = function(e) {
-            if (e.target === this) closeGuestsModal();
-        }
-        
+
         document.getElementById('time-modal').onclick = function(e) {
             if (e.target === this) closeTimeModal();
         }
